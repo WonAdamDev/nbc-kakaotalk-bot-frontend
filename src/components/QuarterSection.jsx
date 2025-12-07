@@ -23,7 +23,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
 
     try {
       setLoading(true)
-      await axios.post(`${API_URL}/api/game/${gameId}/quarter/start`)
+      await axios.post(`${API_URL}/api/game/${gameId}/quarter/start`, {})
       onUpdate()
     } catch (err) {
       alert('쿼터 시작 실패: ' + (err.response?.data?.error || err.message))
@@ -37,7 +37,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
 
     try {
       setLoading(true)
-      await axios.post(`${API_URL}/api/game/${gameId}/quarter/${quarterNumber}/end`)
+      await axios.post(`${API_URL}/api/game/${gameId}/quarter/${quarterNumber}/end`, {})
       onUpdate()
     } catch (err) {
       alert('쿼터 종료 실패: ' + (err.response?.data?.error || err.message))

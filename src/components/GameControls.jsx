@@ -11,7 +11,7 @@ export default function GameControls({ game, gameId, onUpdate }) {
 
     try {
       setLoading(true)
-      await axios.post(`${API_URL}/api/game/${gameId}/start`)
+      await axios.post(`${API_URL}/api/game/${gameId}/start`, {})
       onUpdate()
     } catch (err) {
       alert('경기 시작 실패: ' + (err.response?.data?.error || err.message))
@@ -25,7 +25,7 @@ export default function GameControls({ game, gameId, onUpdate }) {
 
     try {
       setLoading(true)
-      await axios.post(`${API_URL}/api/game/${gameId}/end`)
+      await axios.post(`${API_URL}/api/game/${gameId}/end`, {})
       onUpdate()
     } catch (err) {
       alert('경기 종료 실패: ' + (err.response?.data?.error || err.message))
