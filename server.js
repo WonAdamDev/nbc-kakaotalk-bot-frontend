@@ -9,15 +9,29 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+console.log('='.repeat(50));
+console.log('🚀 Starting NBC Basketball Frontend Server');
+console.log('='.repeat(50));
+console.log('PORT from env:', process.env.PORT);
+console.log('PORT to use:', PORT);
+console.log('Node version:', process.version);
+console.log('Environment:', process.env.NODE_ENV || 'development');
+
 // Check if dist directory exists
 const distPath = join(__dirname, 'dist');
-console.log('Checking dist directory:', distPath);
+console.log('\n📁 Checking dist directory...');
+console.log('Path:', distPath);
 console.log('Dist exists:', existsSync(distPath));
 console.log('Index.html exists:', existsSync(join(distPath, 'index.html')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', port: PORT });
+  console.log('❤️  Health check request received');
+  res.status(200).json({
+    status: 'ok',
+    port: PORT,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Serve static files from dist directory
@@ -44,16 +58,43 @@ app.get('*', (req, res) => {
   }
 });
 
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server is running on http://0.0.0.0:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', (err) => {
+  if (err) {
+    console.error('❌ Failed to start server:', err);
+    process.exit(1);
+  }
+
+  console.log('\n' + '='.repeat(50));
+  console.log('✅ SERVER STARTED SUCCESSFULLY');
+  console.log('='.repeat(50));
+  console.log(`🌐 Listening on: http://0.0.0.0:${PORT}`);
   console.log(`📁 Serving from: ${distPath}`);
   console.log(`🏥 Health check: http://0.0.0.0:${PORT}/health`);
+  console.log('='.repeat(50) + '\n');
+});
+
+// Error handling
+server.on('error', (error) => {
+  console.error('❌ Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  }
+  process.exit(1);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
+  console.log('\n⚠️  SIGTERM signal received: closing HTTP server');
   server.close(() => {
-    console.log('HTTP server closed');
+    console.log('✅ HTTP server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('\n⚠️  SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('✅ HTTP server closed');
+    process.exit(0);
   });
 });
