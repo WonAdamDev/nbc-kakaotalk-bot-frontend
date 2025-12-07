@@ -7,12 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        blue: {
-          team: '#3B82F6',
-        },
-        white: {
-          team: '#F3F4F6',
-        }
+        'team-blue': '#3B82F6',
+        'team-white': '#F3F4F6',
       }
     },
   },

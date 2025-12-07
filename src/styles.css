@@ -1,0 +1,113 @@
+/* 공통 버튼 스타일 */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn:disabled {
+  background-color: #9CA3AF;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-primary {
+  background-color: #2563EB;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1D4ED8;
+}
+
+.btn-secondary {
+  background-color: #E5E7EB;
+  color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #D1D5DB;
+}
+
+.btn-danger {
+  background-color: #DC2626;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #B91C1C;
+}
+
+.btn-success {
+  background-color: #16A34A;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #15803D;
+}
+
+/* 카드 스타일 */
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+}
+
+/* 입력 필드 */
+.input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 배지 스타일 */
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-blue {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.badge-white {
+  background-color: #F3F4F6;
+  color: #374151;
+  border: 1px solid #D1D5DB;
+}
+
+.badge-success {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.badge-warning {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.badge-danger {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+.badge-secondary {
+  background-color: #E5E7EB;
+  color: #4B5563;
+}
