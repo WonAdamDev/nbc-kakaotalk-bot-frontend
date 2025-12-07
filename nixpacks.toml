@@ -8,9 +8,4 @@ cmds = ["npm install"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npm start"
-
-[healthcheck]
-path = "/health"
-interval = 10
-timeout = 5
+cmd = "node server.js"
