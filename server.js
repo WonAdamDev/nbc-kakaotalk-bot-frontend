@@ -24,14 +24,26 @@ console.log('Path:', distPath);
 console.log('Dist exists:', existsSync(distPath));
 console.log('Index.html exists:', existsSync(join(distPath, 'index.html')));
 
-// Health check endpoint
+// Primary health check endpoint for Railway
 app.get('/health', (req, res) => {
-  console.log('❤️  Health check request received');
-  res.status(200).json({
-    status: 'ok',
-    port: PORT,
-    timestamp: new Date().toISOString()
-  });
+  console.log('❤️  Health check request received at /health');
+  res.status(200).send('OK');
+});
+
+// Root path healthcheck - respond immediately for healthchecks, serve app for browsers
+app.get('/', (req, res, next) => {
+  const userAgent = req.get('user-agent') || '';
+  const accept = req.get('accept') || '';
+
+  // If this looks like a healthcheck (not a browser), respond immediately
+  // Railway/load balancer healthchecks typically don't have browser user-agents
+  if (!userAgent.includes('Mozilla') && !accept.includes('text/html')) {
+    console.log('🔍 Healthcheck at / - responding quickly');
+    return res.status(200).send('OK');
+  }
+
+  // Otherwise, serve the React app
+  next();
 });
 
 // Serve static files from dist directory
