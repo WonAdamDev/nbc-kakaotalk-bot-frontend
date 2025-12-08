@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import axios from 'axios'
+import QuarterStartModal from './QuarterStartModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function QuarterSection({ gameId, game, quarters, lineups, onUpdate }) {
   const [loading, setLoading] = useState(false)
   const [scoreInputs, setScoreInputs] = useState({})
+  const [showModal, setShowModal] = useState(false)
+  const [preview, setPreview] = useState(null)
 
   const currentQuarter = quarters.find(q => q.status === '진행중')
   const canStartNewQuarter = !currentQuarter && quarters.length < 10 // 최대 10쿼터
@@ -19,11 +22,25 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
       return
     }
 
-    if (!confirm('새 쿼터를 시작하시겠습니까?')) return
-
     try {
       setLoading(true)
-      await axios.post(`${API_URL}/api/game/${gameId}/quarter/start`, {})
+      // 미리보기 API 호출
+      const response = await axios.get(`${API_URL}/api/game/${gameId}/quarter/preview`)
+      setPreview(response.data.data)
+      setShowModal(true)
+    } catch (err) {
+      alert('쿼터 미리보기 실패: ' + (err.response?.data?.error || err.message))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleConfirmStart = async (lineup) => {
+    try {
+      setLoading(true)
+      await axios.post(`${API_URL}/api/game/${gameId}/quarter/start`, lineup)
+      setShowModal(false)
+      setPreview(null)
       onUpdate()
     } catch (err) {
       alert('쿼터 시작 실패: ' + (err.response?.data?.error || err.message))
@@ -86,24 +103,34 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
   }
 
   return (
-    <div className="card">
-      <h2 className="text-xl font-bold mb-4">쿼터 관리</h2>
+    <>
+      {/* 쿼터 시작 모달 */}
+      <QuarterStartModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        preview={preview}
+        lineups={lineups}
+        onConfirm={handleConfirmStart}
+      />
 
-      {/* 새 쿼터 시작 버튼 */}
-      {canStartNewQuarter && (
-        <div className="mb-6">
-          <button
-            onClick={handleStartQuarter}
-            disabled={loading}
-            className="btn btn-success"
-          >
-            🏀 {quarters.length === 0 ? '1쿼터 시작' : `${quarters.length + 1}쿼터 시작`}
-          </button>
-          <p className="text-sm text-gray-500 mt-2">
-            ※ 자동 로테이션: 이전 쿼터 벤치 선수들이 역순으로 먼저 출전합니다.
-          </p>
-        </div>
-      )}
+      <div className="card">
+        <h2 className="text-xl font-bold mb-4">쿼터 관리</h2>
+
+        {/* 새 쿼터 시작 버튼 */}
+        {canStartNewQuarter && (
+          <div className="mb-6">
+            <button
+              onClick={handleStartQuarter}
+              disabled={loading}
+              className="btn btn-success"
+            >
+              🏀 {quarters.length === 0 ? '1쿼터 시작' : `${quarters.length + 1}쿼터 시작`}
+            </button>
+            <p className="text-sm text-gray-500 mt-2">
+              ※ 자동 로테이션: 이전 쿼터 벤치 선수들이 정순으로 먼저 출전합니다.
+            </p>
+          </div>
+        )}
 
       {/* 쿼터 목록 */}
       <div className="space-y-4">
@@ -250,5 +277,6 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
         )}
       </div>
     </div>
+    </>
   )
 }
