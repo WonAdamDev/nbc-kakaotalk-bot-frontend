@@ -6,6 +6,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function GameList() {
   const [games, setGames] = useState([])
+  const [rooms, setRooms] = useState([])
+  const [selectedRoom, setSelectedRoom] = useState('')
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -17,16 +19,33 @@ export default function GameList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // 방 목록 로드
+  const loadRooms = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/game/rooms`)
+      if (response.data.success) {
+        setRooms(response.data.data.rooms)
+      }
+    } catch (err) {
+      console.error('Failed to load rooms:', err)
+    }
+  }
+
   // 경기 목록 로드
-  const loadGames = async (page = 1) => {
+  const loadGames = async (page = 1, room = '') => {
     try {
       setLoading(true)
-      const response = await axios.get(`${API_URL}/api/game/all`, {
-        params: {
-          page,
-          limit: 10
-        }
-      })
+      const params = {
+        page,
+        limit: 10
+      }
+
+      // room 파라미터가 있으면 추가
+      if (room) {
+        params.room = room
+      }
+
+      const response = await axios.get(`${API_URL}/api/game/all`, { params })
 
       if (response.data.success) {
         setGames(response.data.data.games)
@@ -42,13 +61,20 @@ export default function GameList() {
   }
 
   useEffect(() => {
+    loadRooms()
     loadGames(1)
   }, [])
 
   // 페이지 변경 핸들러
   const handlePageChange = (newPage) => {
-    loadGames(newPage)
+    loadGames(newPage, selectedRoom)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // 방 필터 변경 핸들러
+  const handleRoomChange = (room) => {
+    setSelectedRoom(room)
+    loadGames(1, room)
   }
 
   // 상태 배지 스타일
@@ -104,9 +130,28 @@ export default function GameList() {
         {/* 헤더 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">경기 목록</h1>
-          <p className="text-gray-400">
-            전체 {pagination.total_items}개의 경기
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-gray-400">
+              전체 {pagination.total_items}개의 경기
+            </p>
+
+            {/* 방 필터링 드롭다운 */}
+            <div className="flex items-center gap-2">
+              <label className="text-gray-400 text-sm">방:</label>
+              <select
+                value={selectedRoom}
+                onChange={(e) => handleRoomChange(e.target.value)}
+                className="bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition-colors"
+              >
+                <option value="">전체</option>
+                {rooms.map((room) => (
+                  <option key={room} value={room}>
+                    {room}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* 경기 목록 */}
