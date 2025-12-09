@@ -38,6 +38,14 @@ export default function GamePage() {
     }
   }, [gameId])
 
+  // 라인업 부분 업데이트 (낙관적 업데이트용)
+  const updateLineups = useCallback((team, newLineups) => {
+    setLineups(prev => ({
+      ...prev,
+      [team]: newLineups
+    }))
+  }, [])
+
   // WebSocket 업데이트 핸들러
   const handleGameUpdate = useCallback((update) => {
     const { type, data } = update
@@ -204,6 +212,7 @@ export default function GamePage() {
           gameStatus={game.status}
           quarters={quarters}
           onUpdate={loadGameData}
+          onLineupUpdate={updateLineups}
         />
 
         {/* 쿼터 섹션 */}

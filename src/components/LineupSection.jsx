@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate }) {
+export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate }) {
   const [selectedTeam, setSelectedTeam] = useState('블루')
   const [memberName, setMemberName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -90,13 +90,19 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
     try {
       setLoading(true)
-      await axios.put(`${API_URL}/api/game/${gameId}/lineup/swap`, {
+      const response = await axios.put(`${API_URL}/api/game/${gameId}/lineup/swap`, {
         team,
         from_number: fromNumber,
         to_number: toNumber
       })
-      // 성공 후 즉시 UI 업데이트
-      onUpdate()
+
+      // 성공 시 즉시 해당 팀 라인업만 업데이트 (낙관적 업데이트)
+      if (response.data.success && response.data.data?.lineups && onLineupUpdate) {
+        onLineupUpdate(team, response.data.data.lineups)
+      } else {
+        // onLineupUpdate가 없으면 전체 리로드 (fallback)
+        onUpdate()
+      }
     } catch (err) {
       alert('순번 변경 실패: ' + (err.response?.data?.error || err.message))
       onUpdate()
