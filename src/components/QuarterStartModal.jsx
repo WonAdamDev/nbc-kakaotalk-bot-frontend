@@ -55,7 +55,12 @@ export default function QuarterStartModal({
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
 
-    if (draggedItem && draggedItem.team === team && draggedItem.position === position && draggedItem.index !== index) {
+    // 같은 팀이면 출전↔벤치 간에도 드롭 가능
+    if (draggedItem && draggedItem.team === team) {
+      // 같은 position이고 같은 index면 스킵
+      if (draggedItem.position === position && draggedItem.index === index) {
+        return
+      }
       setDragOverItem({ team, position, index })
     }
   }
@@ -70,55 +75,125 @@ export default function QuarterStartModal({
     e.preventDefault()
     setDragOverItem(null)
 
-    if (!draggedItem || draggedItem.team !== team || draggedItem.position !== position) {
+    if (!draggedItem || draggedItem.team !== team) {
       setDraggedItem(null)
       return
     }
 
+    const fromPosition = draggedItem.position
     const fromIndex = draggedItem.index
 
-    if (fromIndex === toIndex) {
+    // 같은 위치의 같은 인덱스면 스킵
+    if (fromPosition === position && fromIndex === toIndex) {
       setDraggedItem(null)
       return
     }
 
-    // 두 항목 교체 (swap)
-    if (team === 'blue') {
-      if (position === 'playing') {
-        setPlayingBlue(prev => {
-          const newArr = [...prev]
-          // fromIndex와 toIndex 위치의 항목을 서로 교체
-          const temp = newArr[fromIndex]
-          newArr[fromIndex] = newArr[toIndex]
-          newArr[toIndex] = temp
-          return newArr
-        })
+    // 같은 position 내에서 교체
+    if (fromPosition === position) {
+      if (team === 'blue') {
+        if (position === 'playing') {
+          setPlayingBlue(prev => {
+            const newArr = [...prev]
+            const temp = newArr[fromIndex]
+            newArr[fromIndex] = newArr[toIndex]
+            newArr[toIndex] = temp
+            return newArr
+          })
+        } else {
+          setBenchBlue(prev => {
+            const newArr = [...prev]
+            const temp = newArr[fromIndex]
+            newArr[fromIndex] = newArr[toIndex]
+            newArr[toIndex] = temp
+            return newArr
+          })
+        }
       } else {
-        setBenchBlue(prev => {
-          const newArr = [...prev]
-          const temp = newArr[fromIndex]
-          newArr[fromIndex] = newArr[toIndex]
-          newArr[toIndex] = temp
-          return newArr
-        })
+        if (position === 'playing') {
+          setPlayingWhite(prev => {
+            const newArr = [...prev]
+            const temp = newArr[fromIndex]
+            newArr[fromIndex] = newArr[toIndex]
+            newArr[toIndex] = temp
+            return newArr
+          })
+        } else {
+          setBenchWhite(prev => {
+            const newArr = [...prev]
+            const temp = newArr[fromIndex]
+            newArr[fromIndex] = newArr[toIndex]
+            newArr[toIndex] = temp
+            return newArr
+          })
+        }
       }
     } else {
-      if (position === 'playing') {
-        setPlayingWhite(prev => {
-          const newArr = [...prev]
-          const temp = newArr[fromIndex]
-          newArr[fromIndex] = newArr[toIndex]
-          newArr[toIndex] = temp
-          return newArr
-        })
+      // 다른 position 간 교체 (출전 ↔ 벤치)
+      if (team === 'blue') {
+        if (fromPosition === 'playing') {
+          // 출전 → 벤치
+          const playingPlayer = playingBlue[fromIndex]
+          const benchPlayer = benchBlue[toIndex]
+
+          setPlayingBlue(prev => {
+            const newArr = [...prev]
+            newArr[fromIndex] = benchPlayer
+            return newArr
+          })
+          setBenchBlue(prev => {
+            const newArr = [...prev]
+            newArr[toIndex] = playingPlayer
+            return newArr
+          })
+        } else {
+          // 벤치 → 출전
+          const benchPlayer = benchBlue[fromIndex]
+          const playingPlayer = playingBlue[toIndex]
+
+          setBenchBlue(prev => {
+            const newArr = [...prev]
+            newArr[fromIndex] = playingPlayer
+            return newArr
+          })
+          setPlayingBlue(prev => {
+            const newArr = [...prev]
+            newArr[toIndex] = benchPlayer
+            return newArr
+          })
+        }
       } else {
-        setBenchWhite(prev => {
-          const newArr = [...prev]
-          const temp = newArr[fromIndex]
-          newArr[fromIndex] = newArr[toIndex]
-          newArr[toIndex] = temp
-          return newArr
-        })
+        if (fromPosition === 'playing') {
+          // 출전 → 벤치
+          const playingPlayer = playingWhite[fromIndex]
+          const benchPlayer = benchWhite[toIndex]
+
+          setPlayingWhite(prev => {
+            const newArr = [...prev]
+            newArr[fromIndex] = benchPlayer
+            return newArr
+          })
+          setBenchWhite(prev => {
+            const newArr = [...prev]
+            newArr[toIndex] = playingPlayer
+            return newArr
+          })
+        } else {
+          // 벤치 → 출전
+          const benchPlayer = benchWhite[fromIndex]
+          const playingPlayer = playingWhite[toIndex]
+
+          setBenchWhite(prev => {
+            const newArr = [...prev]
+            newArr[fromIndex] = playingPlayer
+            return newArr
+          })
+          setPlayingWhite(prev => {
+            const newArr = [...prev]
+            newArr[toIndex] = benchPlayer
+            return newArr
+          })
+        }
       }
     }
 
