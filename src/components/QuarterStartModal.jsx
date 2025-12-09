@@ -82,20 +82,23 @@ export default function QuarterStartModal({
       return
     }
 
-    // 배열 순서 변경
+    // 두 항목 교체 (swap)
     if (team === 'blue') {
       if (position === 'playing') {
         setPlayingBlue(prev => {
           const newArr = [...prev]
-          const [removed] = newArr.splice(fromIndex, 1)
-          newArr.splice(toIndex, 0, removed)
+          // fromIndex와 toIndex 위치의 항목을 서로 교체
+          const temp = newArr[fromIndex]
+          newArr[fromIndex] = newArr[toIndex]
+          newArr[toIndex] = temp
           return newArr
         })
       } else {
         setBenchBlue(prev => {
           const newArr = [...prev]
-          const [removed] = newArr.splice(fromIndex, 1)
-          newArr.splice(toIndex, 0, removed)
+          const temp = newArr[fromIndex]
+          newArr[fromIndex] = newArr[toIndex]
+          newArr[toIndex] = temp
           return newArr
         })
       }
@@ -103,15 +106,17 @@ export default function QuarterStartModal({
       if (position === 'playing') {
         setPlayingWhite(prev => {
           const newArr = [...prev]
-          const [removed] = newArr.splice(fromIndex, 1)
-          newArr.splice(toIndex, 0, removed)
+          const temp = newArr[fromIndex]
+          newArr[fromIndex] = newArr[toIndex]
+          newArr[toIndex] = temp
           return newArr
         })
       } else {
         setBenchWhite(prev => {
           const newArr = [...prev]
-          const [removed] = newArr.splice(fromIndex, 1)
-          newArr.splice(toIndex, 0, removed)
+          const temp = newArr[fromIndex]
+          newArr[fromIndex] = newArr[toIndex]
+          newArr[toIndex] = temp
           return newArr
         })
       }
