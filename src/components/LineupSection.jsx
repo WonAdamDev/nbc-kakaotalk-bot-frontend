@@ -21,14 +21,15 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
     try {
       setLoading(true)
+      setMemberName('')
       await axios.post(`${API_URL}/api/game/${gameId}/lineup/arrival`, {
         team: selectedTeam,
         member: memberName.trim()
       })
-      setMemberName('')
-      onUpdate()
+      // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
     } catch (err) {
       alert('도착 처리 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
     }
@@ -40,9 +41,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
     try {
       setLoading(true)
       await axios.delete(`${API_URL}/api/game/${gameId}/lineup/${lineupId}`)
-      onUpdate()
+      // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
     } catch (err) {
       alert('제거 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
     }
@@ -93,9 +95,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         from_number: fromNumber,
         to_number: toNumber
       })
-      onUpdate()
+      // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
     } catch (err) {
       alert('순번 변경 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
       setDraggedPlayer(null)

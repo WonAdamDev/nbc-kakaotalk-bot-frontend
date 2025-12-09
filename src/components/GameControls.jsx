@@ -12,9 +12,10 @@ export default function GameControls({ game, gameId, onUpdate }) {
     try {
       setLoading(true)
       await axios.post(`${API_URL}/api/game/${gameId}/start`, {})
-      onUpdate()
+      // WebSocket이 자동으로 업데이트
     } catch (err) {
       alert('경기 시작 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
     }
@@ -26,9 +27,10 @@ export default function GameControls({ game, gameId, onUpdate }) {
     try {
       setLoading(true)
       await axios.post(`${API_URL}/api/game/${gameId}/end`, {})
-      onUpdate()
+      // WebSocket이 자동으로 업데이트
     } catch (err) {
       alert('경기 종료 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
     }

@@ -41,9 +41,10 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
       await axios.post(`${API_URL}/api/game/${gameId}/quarter/start`, lineup)
       setShowModal(false)
       setPreview(null)
-      onUpdate()
+      // WebSocket이 자동으로 업데이트
     } catch (err) {
       alert('쿼터 시작 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
     }
@@ -55,9 +56,10 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
     try {
       setLoading(true)
       await axios.post(`${API_URL}/api/game/${gameId}/quarter/${quarterNumber}/end`, {})
-      onUpdate()
+      // WebSocket이 자동으로 업데이트
     } catch (err) {
       alert('쿼터 종료 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
     }
@@ -76,11 +78,12 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
         score_blue: scoreBlue,
         score_white: scoreWhite
       })
-      onUpdate()
       // 입력 필드 초기화
       setScoreInputs(prev => ({ ...prev, [quarterNumber]: { blue: '', white: '' } }))
+      // WebSocket이 자동으로 업데이트
     } catch (err) {
       alert('점수 업데이트 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
     }

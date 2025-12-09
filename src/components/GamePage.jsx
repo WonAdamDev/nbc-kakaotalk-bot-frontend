@@ -64,19 +64,44 @@ export default function GamePage() {
         break
 
       case 'player_removed':
-        // 라인업에서 선수 제거 후 재로드
-        loadGameData()
+        // 라인업에서 선수 제거 - 해당 팀만 업데이트
+        if (data.lineups) {
+          setLineups(prev => ({
+            ...prev,
+            [data.team]: data.lineups
+          }))
+        } else {
+          loadGameData()
+        }
         break
 
       case 'lineup_swapped':
-        // 라인업 순번 교체 후 재로드
-        loadGameData()
+        // 라인업 순번 교체 - 해당 팀만 업데이트
+        if (data.lineups) {
+          setLineups(prev => ({
+            ...prev,
+            [data.team]: data.lineups
+          }))
+        } else {
+          loadGameData()
+        }
         break
 
       case 'quarter_started':
+        // 쿼터 시작 - 쿼터 추가 및 게임 상태 업데이트
+        setQuarters(prev => [...prev, data])
+        setGame(prev => ({ ...prev, current_quarter: data.quarter }))
+        break
+
       case 'quarter_ended':
-        // 쿼터 업데이트
-        loadGameData()
+        // 쿼터 종료 - 해당 쿼터만 업데이트
+        setQuarters(prev =>
+          prev.map(q =>
+            q.quarter === data.quarter
+              ? data
+              : q
+          )
+        )
         break
 
       case 'score_updated':
