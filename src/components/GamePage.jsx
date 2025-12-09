@@ -177,6 +177,7 @@ export default function GamePage() {
           gameId={gameId}
           lineups={lineups}
           gameStatus={game.status}
+          quarters={quarters}
           onUpdate={loadGameData}
         />
 

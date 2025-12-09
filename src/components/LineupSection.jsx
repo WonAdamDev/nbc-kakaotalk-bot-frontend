@@ -3,12 +3,17 @@ import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export default function LineupSection({ gameId, lineups, gameStatus, onUpdate }) {
+export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate }) {
   const [selectedTeam, setSelectedTeam] = useState('블루')
   const [memberName, setMemberName] = useState('')
   const [loading, setLoading] = useState(false)
   const [draggedPlayer, setDraggedPlayer] = useState(null)
   const [dragOverPlayer, setDragOverPlayer] = useState(null)
+
+  // 진행중인 쿼터가 있는지 확인
+  const hasOngoingQuarter = quarters?.some(q => q.status === '진행중') || false
+  // 경기가 종료되지 않았고, 진행중인 쿼터가 없으면 순번 변경 가능
+  const canSwapLineup = gameStatus !== '종료' && !hasOngoingQuarter
 
   const handleArrival = async (e) => {
     e.preventDefault()
@@ -145,8 +150,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
             <h3 className="text-lg font-semibold">블루팀</h3>
             <span className="badge badge-blue">{lineups.블루?.length || 0}명</span>
-            {gameStatus === '준비중' && (
-              <span className="text-xs text-gray-500 ml-2">드래그하여 순번 변경</span>
+            {canSwapLineup && (
+              <span className="text-xs text-gray-500 ml-2">
+                {hasOngoingQuarter ? '⏸️ 쿼터 진행중' : '✨ 드래그하여 순번 변경'}
+              </span>
             )}
           </div>
 
@@ -157,7 +164,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
               lineups.블루?.map((lineup, idx) => {
                 const isDragging = draggedPlayer?.team === '블루' && draggedPlayer?.number === lineup.number
                 const isDropTarget = dragOverPlayer?.team === '블루' && dragOverPlayer?.number === lineup.number
-                const canDrag = gameStatus === '준비중'
+                const canDrag = canSwapLineup
 
                 return (
                   <div
@@ -211,8 +218,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
             <div className="w-4 h-4 bg-gray-400 rounded border border-gray-600"></div>
             <h3 className="text-lg font-semibold">화이트팀</h3>
             <span className="badge badge-white">{lineups.화이트?.length || 0}명</span>
-            {gameStatus === '준비중' && (
-              <span className="text-xs text-gray-500 ml-2">드래그하여 순번 변경</span>
+            {canSwapLineup && (
+              <span className="text-xs text-gray-500 ml-2">
+                {hasOngoingQuarter ? '⏸️ 쿼터 진행중' : '✨ 드래그하여 순번 변경'}
+              </span>
             )}
           </div>
 
@@ -223,7 +232,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
               lineups.화이트?.map((lineup, idx) => {
                 const isDragging = draggedPlayer?.team === '화이트' && draggedPlayer?.number === lineup.number
                 const isDropTarget = dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === lineup.number
-                const canDrag = gameStatus === '준비중'
+                const canDrag = canSwapLineup
 
                 return (
                   <div
