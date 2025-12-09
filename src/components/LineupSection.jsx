@@ -7,6 +7,8 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
   const [selectedTeam, setSelectedTeam] = useState('블루')
   const [memberName, setMemberName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [draggedPlayer, setDraggedPlayer] = useState(null)
+  const [dragOverPlayer, setDragOverPlayer] = useState(null)
 
   const handleArrival = async (e) => {
     e.preventDefault()
@@ -39,6 +41,66 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
     } finally {
       setLoading(false)
     }
+  }
+
+  // 드래그 시작
+  const handleDragStart = (e, team, number, member) => {
+    setDraggedPlayer({ team, number, member })
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  // 드래그 오버
+  const handleDragOver = (e, team, number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+
+    if (draggedPlayer && draggedPlayer.team === team && draggedPlayer.number !== number) {
+      setDragOverPlayer({ team, number })
+    }
+  }
+
+  // 드래그 떠남
+  const handleDragLeave = () => {
+    setDragOverPlayer(null)
+  }
+
+  // 드롭
+  const handleDrop = async (e, team, toNumber) => {
+    e.preventDefault()
+    setDragOverPlayer(null)
+
+    if (!draggedPlayer || draggedPlayer.team !== team) {
+      setDraggedPlayer(null)
+      return
+    }
+
+    const fromNumber = draggedPlayer.number
+
+    if (fromNumber === toNumber) {
+      setDraggedPlayer(null)
+      return
+    }
+
+    try {
+      setLoading(true)
+      await axios.put(`${API_URL}/api/game/${gameId}/lineup/swap`, {
+        team,
+        from_number: fromNumber,
+        to_number: toNumber
+      })
+      onUpdate()
+    } catch (err) {
+      alert('순번 변경 실패: ' + (err.response?.data?.error || err.message))
+    } finally {
+      setLoading(false)
+      setDraggedPlayer(null)
+    }
+  }
+
+  // 드래그 종료
+  const handleDragEnd = () => {
+    setDraggedPlayer(null)
+    setDragOverPlayer(null)
   }
 
   return (
@@ -83,39 +145,62 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
             <h3 className="text-lg font-semibold">블루팀</h3>
             <span className="badge badge-blue">{lineups.블루?.length || 0}명</span>
+            {gameStatus === '준비중' && (
+              <span className="text-xs text-gray-500 ml-2">드래그하여 순번 변경</span>
+            )}
           </div>
 
           <div className="space-y-2">
             {lineups.블루?.length === 0 ? (
               <p className="text-gray-500 text-sm">도착한 선수가 없습니다.</p>
             ) : (
-              lineups.블루?.map((lineup, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-blue-700">
-                      {lineup.number}
-                    </span>
-                    <div>
-                      <p className="font-medium text-gray-900">{lineup.member}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
-                      </p>
-                    </div>
-                  </div>
+              lineups.블루?.map((lineup, idx) => {
+                const isDragging = draggedPlayer?.team === '블루' && draggedPlayer?.number === lineup.number
+                const isDropTarget = dragOverPlayer?.team === '블루' && dragOverPlayer?.number === lineup.number
+                const canDrag = gameStatus === '준비중'
 
-                  {gameStatus === '준비중' && (
-                    <button
-                      onClick={() => handleRemove(idx + 1, lineup.member)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      ❌
-                    </button>
-                  )}
-                </div>
-              ))
+                return (
+                  <div
+                    key={idx}
+                    draggable={canDrag}
+                    onDragStart={(e) => canDrag && handleDragStart(e, '블루', lineup.number, lineup.member)}
+                    onDragOver={(e) => canDrag && handleDragOver(e, '블루', lineup.number)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => canDrag && handleDrop(e, '블루', lineup.number)}
+                    onDragEnd={handleDragEnd}
+                    className={`
+                      flex items-center justify-between p-3 rounded-lg border transition-all
+                      ${isDragging ? 'opacity-50 scale-95' : ''}
+                      ${isDropTarget ? 'border-blue-500 border-2 bg-blue-100' : 'bg-blue-50 border-blue-200'}
+                      ${canDrag ? 'cursor-move hover:shadow-md' : ''}
+                    `}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex flex-col items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-lg font-bold text-lg">
+                        {lineup.number}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {gameStatus === '준비중' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleRemove(idx + 1, lineup.member)
+                        }}
+                        className="text-red-600 hover:text-red-800 text-sm px-2"
+                      >
+                        ❌
+                      </button>
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
         </div>
@@ -126,39 +211,62 @@ export default function LineupSection({ gameId, lineups, gameStatus, onUpdate })
             <div className="w-4 h-4 bg-gray-400 rounded border border-gray-600"></div>
             <h3 className="text-lg font-semibold">화이트팀</h3>
             <span className="badge badge-white">{lineups.화이트?.length || 0}명</span>
+            {gameStatus === '준비중' && (
+              <span className="text-xs text-gray-500 ml-2">드래그하여 순번 변경</span>
+            )}
           </div>
 
           <div className="space-y-2">
             {lineups.화이트?.length === 0 ? (
               <p className="text-gray-500 text-sm">도착한 선수가 없습니다.</p>
             ) : (
-              lineups.화이트?.map((lineup, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-300"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-gray-700">
-                      {lineup.number}
-                    </span>
-                    <div>
-                      <p className="font-medium text-gray-900">{lineup.member}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
-                      </p>
-                    </div>
-                  </div>
+              lineups.화이트?.map((lineup, idx) => {
+                const isDragging = draggedPlayer?.team === '화이트' && draggedPlayer?.number === lineup.number
+                const isDropTarget = dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === lineup.number
+                const canDrag = gameStatus === '준비중'
 
-                  {gameStatus === '준비중' && (
-                    <button
-                      onClick={() => handleRemove(idx + 1, lineup.member)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      ❌
-                    </button>
-                  )}
-                </div>
-              ))
+                return (
+                  <div
+                    key={idx}
+                    draggable={canDrag}
+                    onDragStart={(e) => canDrag && handleDragStart(e, '화이트', lineup.number, lineup.member)}
+                    onDragOver={(e) => canDrag && handleDragOver(e, '화이트', lineup.number)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => canDrag && handleDrop(e, '화이트', lineup.number)}
+                    onDragEnd={handleDragEnd}
+                    className={`
+                      flex items-center justify-between p-3 rounded-lg border transition-all
+                      ${isDragging ? 'opacity-50 scale-95' : ''}
+                      ${isDropTarget ? 'border-gray-700 border-2 bg-gray-200' : 'bg-gray-50 border-gray-300'}
+                      ${canDrag ? 'cursor-move hover:shadow-md' : ''}
+                    `}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex flex-col items-center justify-center w-12 h-12 bg-gray-600 text-white rounded-lg font-bold text-lg">
+                        {lineup.number}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {gameStatus === '준비중' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleRemove(idx + 1, lineup.member)
+                        }}
+                        className="text-red-600 hover:text-red-800 text-sm px-2"
+                      >
+                        ❌
+                      </button>
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
         </div>

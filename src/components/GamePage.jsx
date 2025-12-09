@@ -68,6 +68,11 @@ export default function GamePage() {
         loadGameData()
         break
 
+      case 'lineup_swapped':
+        // 라인업 순번 교체 후 재로드
+        loadGameData()
+        break
+
       case 'quarter_started':
       case 'quarter_ended':
         // 쿼터 업데이트
