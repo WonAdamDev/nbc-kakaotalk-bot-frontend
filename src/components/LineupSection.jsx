@@ -95,10 +95,11 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         from_number: fromNumber,
         to_number: toNumber
       })
-      // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
+      // 성공 후 즉시 UI 업데이트
+      onUpdate()
     } catch (err) {
       alert('순번 변경 실패: ' + (err.response?.data?.error || err.message))
-      onUpdate() // 에러 발생 시에만 재로드
+      onUpdate()
     } finally {
       setLoading(false)
       setDraggedPlayer(null)
