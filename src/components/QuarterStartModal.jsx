@@ -12,6 +12,8 @@ export default function QuarterStartModal({
   const [playingWhite, setPlayingWhite] = useState([])
   const [benchWhite, setBenchWhite] = useState([])
   const [isEditing, setIsEditing] = useState(false)
+  const [draggedItem, setDraggedItem] = useState(null)
+  const [dragOverItem, setDragOverItem] = useState(null)
 
   // 미리보기 데이터로 초기화
   useEffect(() => {
@@ -42,7 +44,89 @@ export default function QuarterStartModal({
     })
   }
 
-  // 선수 이동 (드래그앤드롭 대신 버튼 방식)
+  // 드래그 시작
+  const handleDragStart = (e, team, position, index, number) => {
+    setDraggedItem({ team, position, index, number })
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  // 드래그 오버
+  const handleDragOver = (e, team, position, index) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+
+    if (draggedItem && draggedItem.team === team && draggedItem.position === position && draggedItem.index !== index) {
+      setDragOverItem({ team, position, index })
+    }
+  }
+
+  // 드래그 떠남
+  const handleDragLeave = () => {
+    setDragOverItem(null)
+  }
+
+  // 드롭
+  const handleDrop = (e, team, position, toIndex) => {
+    e.preventDefault()
+    setDragOverItem(null)
+
+    if (!draggedItem || draggedItem.team !== team || draggedItem.position !== position) {
+      setDraggedItem(null)
+      return
+    }
+
+    const fromIndex = draggedItem.index
+
+    if (fromIndex === toIndex) {
+      setDraggedItem(null)
+      return
+    }
+
+    // 배열 순서 변경
+    if (team === 'blue') {
+      if (position === 'playing') {
+        setPlayingBlue(prev => {
+          const newArr = [...prev]
+          const [removed] = newArr.splice(fromIndex, 1)
+          newArr.splice(toIndex, 0, removed)
+          return newArr
+        })
+      } else {
+        setBenchBlue(prev => {
+          const newArr = [...prev]
+          const [removed] = newArr.splice(fromIndex, 1)
+          newArr.splice(toIndex, 0, removed)
+          return newArr
+        })
+      }
+    } else {
+      if (position === 'playing') {
+        setPlayingWhite(prev => {
+          const newArr = [...prev]
+          const [removed] = newArr.splice(fromIndex, 1)
+          newArr.splice(toIndex, 0, removed)
+          return newArr
+        })
+      } else {
+        setBenchWhite(prev => {
+          const newArr = [...prev]
+          const [removed] = newArr.splice(fromIndex, 1)
+          newArr.splice(toIndex, 0, removed)
+          return newArr
+        })
+      }
+    }
+
+    setDraggedItem(null)
+  }
+
+  // 드래그 종료
+  const handleDragEnd = () => {
+    setDraggedItem(null)
+    setDragOverItem(null)
+  }
+
+  // 선수 이동 (출전 ↔ 벤치)
   const movePlayer = (team, from, number) => {
     if (team === 'blue') {
       if (from === 'playing') {
@@ -85,7 +169,7 @@ export default function QuarterStartModal({
         <div className="p-6">
           <p className="text-gray-600 mb-4">
             {isEditing
-              ? '선수를 클릭하여 출전/벤치를 변경할 수 있습니다. (각 팀 출전 5명 필수)'
+              ? '✨ 드래그하여 순서 변경 / 클릭하여 출전↔벤치 이동 (각 팀 출전 5명 필수)'
               : '자동 로테이션된 출전 명단입니다. 수정하시려면 "선수 변경" 버튼을 누르세요.'}
           </p>
 
@@ -104,19 +188,32 @@ export default function QuarterStartModal({
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {playingBlue.map(num => (
-                  <button
-                    key={num}
-                    onClick={() => isEditing && movePlayer('blue', 'playing', num)}
-                    disabled={!isEditing}
-                    className={`px-3 py-2 bg-blue-500 text-white rounded font-medium ${
-                      isEditing ? 'hover:bg-blue-600 cursor-pointer' : ''
-                    }`}
-                  >
-                    {num}. {getMemberName('blue', num)}
-                    {isEditing && ' →'}
-                  </button>
-                ))}
+                {playingBlue.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'blue' && draggedItem?.position === 'playing' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'blue' && dragOverItem?.position === 'playing' && dragOverItem?.index === index
+
+                  return (
+                    <div
+                      key={num}
+                      draggable={isEditing}
+                      onDragStart={(e) => isEditing && handleDragStart(e, 'blue', 'playing', index, num)}
+                      onDragOver={(e) => isEditing && handleDragOver(e, 'blue', 'playing', index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => isEditing && handleDrop(e, 'blue', 'playing', index)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => isEditing && movePlayer('blue', 'playing', num)}
+                      className={`
+                        px-3 py-2 bg-blue-500 text-white rounded font-medium transition-all
+                        ${isDragging ? 'opacity-50 scale-95' : ''}
+                        ${isDropTarget ? 'ring-2 ring-blue-300' : ''}
+                        ${isEditing ? 'hover:bg-blue-600 cursor-move' : ''}
+                      `}
+                    >
+                      {num}. {getMemberName('blue', num)}
+                      {isEditing && ' ⇄'}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
@@ -126,19 +223,32 @@ export default function QuarterStartModal({
                 벤치 - {benchBlue.length}명
               </p>
               <div className="flex flex-wrap gap-2">
-                {benchBlue.map(num => (
-                  <button
-                    key={num}
-                    onClick={() => isEditing && movePlayer('blue', 'bench', num)}
-                    disabled={!isEditing}
-                    className={`px-3 py-2 bg-blue-100 text-blue-700 rounded ${
-                      isEditing ? 'hover:bg-blue-200 cursor-pointer' : ''
-                    }`}
-                  >
-                    {num}. {getMemberName('blue', num)}
-                    {isEditing && ' →'}
-                  </button>
-                ))}
+                {benchBlue.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'blue' && draggedItem?.position === 'bench' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'blue' && dragOverItem?.position === 'bench' && dragOverItem?.index === index
+
+                  return (
+                    <div
+                      key={num}
+                      draggable={isEditing}
+                      onDragStart={(e) => isEditing && handleDragStart(e, 'blue', 'bench', index, num)}
+                      onDragOver={(e) => isEditing && handleDragOver(e, 'blue', 'bench', index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => isEditing && handleDrop(e, 'blue', 'bench', index)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => isEditing && movePlayer('blue', 'bench', num)}
+                      className={`
+                        px-3 py-2 bg-blue-100 text-blue-700 rounded transition-all
+                        ${isDragging ? 'opacity-50 scale-95' : ''}
+                        ${isDropTarget ? 'ring-2 ring-blue-300' : ''}
+                        ${isEditing ? 'hover:bg-blue-200 cursor-move' : ''}
+                      `}
+                    >
+                      {num}. {getMemberName('blue', num)}
+                      {isEditing && ' ⇄'}
+                    </div>
+                  )
+                })}
                 {benchBlue.length === 0 && (
                   <span className="text-sm text-gray-400">벤치 선수 없음</span>
                 )}
@@ -161,19 +271,32 @@ export default function QuarterStartModal({
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {playingWhite.map(num => (
-                  <button
-                    key={num}
-                    onClick={() => isEditing && movePlayer('white', 'playing', num)}
-                    disabled={!isEditing}
-                    className={`px-3 py-2 bg-gray-600 text-white rounded font-medium ${
-                      isEditing ? 'hover:bg-gray-700 cursor-pointer' : ''
-                    }`}
-                  >
-                    {num}. {getMemberName('white', num)}
-                    {isEditing && ' →'}
-                  </button>
-                ))}
+                {playingWhite.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'white' && draggedItem?.position === 'playing' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'white' && dragOverItem?.position === 'playing' && dragOverItem?.index === index
+
+                  return (
+                    <div
+                      key={num}
+                      draggable={isEditing}
+                      onDragStart={(e) => isEditing && handleDragStart(e, 'white', 'playing', index, num)}
+                      onDragOver={(e) => isEditing && handleDragOver(e, 'white', 'playing', index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => isEditing && handleDrop(e, 'white', 'playing', index)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => isEditing && movePlayer('white', 'playing', num)}
+                      className={`
+                        px-3 py-2 bg-gray-600 text-white rounded font-medium transition-all
+                        ${isDragging ? 'opacity-50 scale-95' : ''}
+                        ${isDropTarget ? 'ring-2 ring-gray-400' : ''}
+                        ${isEditing ? 'hover:bg-gray-700 cursor-move' : ''}
+                      `}
+                    >
+                      {num}. {getMemberName('white', num)}
+                      {isEditing && ' ⇄'}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
@@ -183,19 +306,32 @@ export default function QuarterStartModal({
                 벤치 - {benchWhite.length}명
               </p>
               <div className="flex flex-wrap gap-2">
-                {benchWhite.map(num => (
-                  <button
-                    key={num}
-                    onClick={() => isEditing && movePlayer('white', 'bench', num)}
-                    disabled={!isEditing}
-                    className={`px-3 py-2 bg-gray-100 text-gray-700 rounded border border-gray-300 ${
-                      isEditing ? 'hover:bg-gray-200 cursor-pointer' : ''
-                    }`}
-                  >
-                    {num}. {getMemberName('white', num)}
-                    {isEditing && ' →'}
-                  </button>
-                ))}
+                {benchWhite.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'white' && draggedItem?.position === 'bench' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'white' && dragOverItem?.position === 'bench' && dragOverItem?.index === index
+
+                  return (
+                    <div
+                      key={num}
+                      draggable={isEditing}
+                      onDragStart={(e) => isEditing && handleDragStart(e, 'white', 'bench', index, num)}
+                      onDragOver={(e) => isEditing && handleDragOver(e, 'white', 'bench', index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => isEditing && handleDrop(e, 'white', 'bench', index)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => isEditing && movePlayer('white', 'bench', num)}
+                      className={`
+                        px-3 py-2 bg-gray-100 text-gray-700 rounded border border-gray-300 transition-all
+                        ${isDragging ? 'opacity-50 scale-95' : ''}
+                        ${isDropTarget ? 'ring-2 ring-gray-400' : ''}
+                        ${isEditing ? 'hover:bg-gray-200 cursor-move' : ''}
+                      `}
+                    >
+                      {num}. {getMemberName('white', num)}
+                      {isEditing && ' ⇄'}
+                    </div>
+                  )
+                })}
                 {benchWhite.length === 0 && (
                   <span className="text-sm text-gray-400">벤치 선수 없음</span>
                 )}
