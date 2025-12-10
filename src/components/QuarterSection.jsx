@@ -73,8 +73,12 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
         score_blue: scoreBlue,
         score_white: scoreWhite
       })
-      // 입력 필드 초기화
-      setScoreInputs(prev => ({ ...prev, [quarterNumber]: { blue: '', white: '' } }))
+      // 입력 필드 초기화 (해당 쿼터 제거하여 quarter.score로 fallback)
+      setScoreInputs(prev => {
+        const newInputs = { ...prev }
+        delete newInputs[quarterNumber]
+        return newInputs
+      })
       // WebSocket이 자동으로 업데이트
     } catch (err) {
       alert('점수 업데이트 실패: ' + (err.response?.data?.error || err.message))
