@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import useWebSocket from '../hooks/useWebSocket'
@@ -17,6 +17,7 @@ export default function GamePage() {
   const [quarters, setQuarters] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const wasConnectedRef = useRef(null) // null: 초기값, true/false: 연결 상태
 
   // 게임 데이터 로드
   const loadGameData = useCallback(async () => {
@@ -139,6 +140,23 @@ export default function GamePage() {
   useEffect(() => {
     loadGameData()
   }, [loadGameData])
+
+  // WebSocket 재연결 시 데이터 동기화
+  useEffect(() => {
+    // 재연결된 경우 (최초 연결은 제외)
+    if (isConnected && wasConnectedRef.current === false) {
+      console.log('[WebSocket] Reconnected - Reloading game data...')
+      loadGameData()
+    }
+
+    // 연결 상태 업데이트 (null → true/false 또는 true ↔ false)
+    if (wasConnectedRef.current !== null) {
+      wasConnectedRef.current = isConnected
+    } else if (isConnected) {
+      // 최초 연결 완료
+      wasConnectedRef.current = true
+    }
+  }, [isConnected, loadGameData])
 
   if (loading) {
     return (
