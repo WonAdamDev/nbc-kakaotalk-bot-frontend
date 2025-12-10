@@ -77,13 +77,15 @@ export default function GameControls({ game, gameId, onUpdate }) {
           </button>
         )}
 
-        <button
-          onClick={handleDeleteGame}
-          disabled={loading}
-          className="btn btn-danger"
-        >
-          🗑️ 경기 삭제
-        </button>
+        {game.status !== '종료' && (
+          <button
+            onClick={handleDeleteGame}
+            disabled={loading}
+            className="btn btn-danger"
+          >
+            🗑️ 경기 삭제
+          </button>
+        )}
       </div>
 
       <p className="text-sm text-gray-500 mt-3">

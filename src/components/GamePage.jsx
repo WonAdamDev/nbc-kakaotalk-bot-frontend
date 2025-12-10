@@ -235,7 +235,7 @@ export default function GamePage() {
         />
 
         {/* 쿼터 섹션 */}
-        {game.status === '진행중' && (
+        {(game.status === '진행중' || game.status === '종료') && (
           <QuarterSection
             gameId={gameId}
             game={game}

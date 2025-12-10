@@ -11,7 +11,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
   const [preview, setPreview] = useState(null)
 
   const currentQuarter = quarters.find(q => q.status === '진행중')
-  const canStartNewQuarter = !currentQuarter && quarters.length < 10 // 최대 10쿼터
+  const canStartNewQuarter = game.status === '진행중' && !currentQuarter && quarters.length < 10 // 최대 10쿼터
 
   const handleStartQuarter = async () => {
     const blueCount = lineups.블루?.length || 0
@@ -177,7 +177,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                   </span>
                 </div>
 
-                {quarter.status === '진행중' && (
+                {quarter.status === '진행중' && game.status !== '종료' && (
                   <button
                     onClick={() => handleEndQuarter(quarter.quarter)}
                     disabled={loading}
@@ -268,6 +268,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                       min="0"
                       value={scoreInputs[quarter.quarter]?.blue ?? quarter.score?.blue ?? 0}
                       onChange={(e) => handleScoreChange(quarter.quarter, 'blue', e.target.value)}
+                      disabled={game.status === '종료'}
                       className="input w-20 text-center"
                     />
                   </div>
@@ -279,17 +280,20 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                       min="0"
                       value={scoreInputs[quarter.quarter]?.white ?? quarter.score?.white ?? 0}
                       onChange={(e) => handleScoreChange(quarter.quarter, 'white', e.target.value)}
+                      disabled={game.status === '종료'}
                       className="input w-20 text-center"
                     />
                   </div>
 
-                  <button
-                    onClick={() => handleUpdateScore(quarter.quarter)}
-                    disabled={loading}
-                    className="btn btn-primary text-sm"
-                  >
-                    💾 저장
-                  </button>
+                  {game.status !== '종료' && (
+                    <button
+                      onClick={() => handleUpdateScore(quarter.quarter)}
+                      disabled={loading}
+                      className="btn btn-primary text-sm"
+                    >
+                      💾 저장
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
