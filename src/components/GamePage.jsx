@@ -50,6 +50,7 @@ export default function GamePage() {
   // WebSocket 업데이트 핸들러
   const handleGameUpdate = useCallback((update) => {
     const { type, data } = update
+    console.log('[GamePage] Received WebSocket update:', type, data)
 
     switch (type) {
       case 'game_state':
