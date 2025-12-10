@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
+import RoomMemberModal from './RoomMemberModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -9,6 +10,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   const [loading, setLoading] = useState(false)
   const [draggedPlayer, setDraggedPlayer] = useState(null)
   const [dragOverPlayer, setDragOverPlayer] = useState(null)
+  const [showMemberModal, setShowMemberModal] = useState(false)
 
   // 진행중인 쿼터가 있는지 확인
   const hasOngoingQuarter = quarters?.some(q => q.status === '진행중') || false
@@ -33,6 +35,11 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
     } finally {
       setLoading(false)
     }
+  }
+
+  // 프리셋에서 멤버 선택
+  const handleSelectMember = (name) => {
+    setMemberName(name)
   }
 
   const handleRemove = async (lineupId, memberName) => {
@@ -119,38 +126,55 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   }
 
   return (
-    <div className="card mb-6">
-      <h2 className="text-xl font-bold mb-4">선수 도착 관리</h2>
+    <>
+      {/* 멤버 프리셋 모달 */}
+      <RoomMemberModal
+        isOpen={showMemberModal}
+        onClose={() => setShowMemberModal(false)}
+        gameId={gameId}
+        onSelectMember={handleSelectMember}
+      />
 
-      {/* 도착 처리 폼 */}
-      <form onSubmit={handleArrival} className="mb-6">
-        <div className="flex flex-wrap gap-3">
-          <select
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-            className="input"
-          >
-            <option value="블루">블루팀</option>
-            <option value="화이트">화이트팀</option>
-          </select>
+      <div className="card mb-6">
+        <h2 className="text-xl font-bold mb-4">선수 도착 관리</h2>
 
-          <input
-            type="text"
-            value={memberName}
-            onChange={(e) => setMemberName(e.target.value)}
-            placeholder="선수 이름"
-            className="input flex-1 min-w-[200px]"
-          />
+        {/* 도착 처리 폼 */}
+        <form onSubmit={handleArrival} className="mb-6">
+          <div className="flex flex-wrap gap-3">
+            <select
+              value={selectedTeam}
+              onChange={(e) => setSelectedTeam(e.target.value)}
+              className="input"
+            >
+              <option value="블루">블루팀</option>
+              <option value="화이트">화이트팀</option>
+            </select>
 
-          <button
-            type="submit"
-            disabled={loading || !memberName.trim()}
-            className="btn btn-primary"
-          >
-            ✅ 도착 처리
-          </button>
-        </div>
-      </form>
+            <input
+              type="text"
+              value={memberName}
+              onChange={(e) => setMemberName(e.target.value)}
+              placeholder="선수 이름"
+              className="input flex-1 min-w-[200px]"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowMemberModal(true)}
+              className="btn btn-secondary"
+            >
+              📋 프리셋
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading || !memberName.trim()}
+              className="btn btn-primary"
+            >
+              ✅ 도착 처리
+            </button>
+          </div>
+        </form>
 
       {/* 팀별 라인업 */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -291,5 +315,6 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         </div>
       </div>
     </div>
+    </>
   )
 }
