@@ -259,7 +259,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
 
               {/* 점수 입력/표시 */}
               <div className="pt-4 border-t border-gray-200">
-                <p className="text-sm font-semibold mb-2">점수</p>
+                <p className="text-sm font-semibold mb-2">누적 점수</p>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">블루:</span>

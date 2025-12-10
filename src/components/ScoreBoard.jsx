@@ -1,7 +1,8 @@
 export default function ScoreBoard({ game, quarters }) {
-  // 각 팀의 총 점수 계산
-  const totalScoreBlue = quarters.reduce((sum, q) => sum + (q.score?.blue || 0), 0)
-  const totalScoreWhite = quarters.reduce((sum, q) => sum + (q.score?.white || 0), 0)
+  // 각 팀의 총 점수 계산 (마지막 쿼터의 누적 점수)
+  const lastQuarter = quarters.length > 0 ? quarters[quarters.length - 1] : null
+  const totalScoreBlue = lastQuarter?.score?.blue || 0
+  const totalScoreWhite = lastQuarter?.score?.white || 0
 
   return (
     <div className="card mb-6">
@@ -42,26 +43,41 @@ export default function ScoreBoard({ game, quarters }) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {quarters.map((quarter) => (
-                  <tr key={quarter.quarter}>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      Q{quarter.quarter}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm text-blue-700 font-semibold">
-                      {quarter.score?.blue || 0}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm text-gray-700 font-semibold">
-                      {quarter.score?.white || 0}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className={`badge ${
-                        quarter.status === '진행중' ? 'badge-success' : 'badge-secondary'
-                      }`}>
-                        {quarter.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {quarters.map((quarter, index) => {
+                  // 이전 쿼터의 누적 점수
+                  const prevQuarter = index > 0 ? quarters[index - 1] : null
+                  const prevBlue = prevQuarter?.score?.blue || 0
+                  const prevWhite = prevQuarter?.score?.white || 0
+
+                  // 현재 쿼터의 누적 점수
+                  const currentBlue = quarter.score?.blue || 0
+                  const currentWhite = quarter.score?.white || 0
+
+                  // 해당 쿼터의 득점 (누적 점수 - 이전 누적 점수)
+                  const quarterScoreBlue = currentBlue - prevBlue
+                  const quarterScoreWhite = currentWhite - prevWhite
+
+                  return (
+                    <tr key={quarter.quarter}>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        Q{quarter.quarter}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-blue-700 font-semibold">
+                        {quarterScoreBlue}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-gray-700 font-semibold">
+                        {quarterScoreWhite}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`badge ${
+                          quarter.status === '진행중' ? 'badge-success' : 'badge-secondary'
+                        }`}>
+                          {quarter.status}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
