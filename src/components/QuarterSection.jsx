@@ -98,18 +98,28 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
     }))
   }
 
-  // 선수 번호로 이름 찾기 (쿼터 스냅샷 우선, 없으면 현재 라인업)
+  // 선수 번호로 이름 찾기 (쿼터 스냅샷 우선)
   const getMemberName = (team, number, quarter) => {
     // 쿼터에 스냅샷이 있으면 스냅샷에서 찾기 (과거 쿼터 보호)
     if (quarter?.lineup_snapshot && quarter.lineup_snapshot[team]) {
       // JSON 변환 시 키가 문자열이 되므로 String(number)로 조회
       const name = quarter.lineup_snapshot[team][String(number)]
-      if (name) return name
+      if (name) {
+        console.log(`[Snapshot] Q${quarter.quarter} ${team} #${number}: ${name}`)
+        return name
+      }
+    } else {
+      console.log(`[No Snapshot] Q${quarter?.quarter} - Using current lineup for ${team} #${number}`)
     }
 
-    // 스냅샷이 없으면 현재 라인업에서 찾기 (새로운 쿼터 미리보기용)
+    // 스냅샷이 없거나 해당 번호가 없으면 현재 라인업에서 찾기
     const lineup = lineups[team]?.find(l => l.number === number)
-    return lineup ? lineup.member : `#${number}`
+    if (lineup) {
+      return lineup.member
+    }
+
+    // 둘 다 없으면 번호만 표시
+    return `#${number}`
   }
 
   return (
