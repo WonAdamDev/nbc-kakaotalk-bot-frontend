@@ -16,6 +16,8 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   const hasOngoingQuarter = quarters?.some(q => q.status === '진행중') || false
   // 경기가 종료되지 않았고, 진행중인 쿼터가 없으면 순번 변경 가능
   const canSwapLineup = gameStatus !== '종료' && !hasOngoingQuarter
+  // 경기가 종료되지 않았고, 진행중인 쿼터가 없으면 조퇴 가능
+  const canRemovePlayer = gameStatus !== '종료' && !hasOngoingQuarter
 
   const handleArrival = async (e) => {
     e.preventDefault()
@@ -43,14 +45,15 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   }
 
   const handleRemove = async (lineupId, memberName) => {
-    if (!confirm(`${memberName}님을 제거하시겠습니까?`)) return
+    const action = gameStatus === '준비중' ? '제거' : '조퇴 처리'
+    if (!confirm(`${memberName}님을 ${action}하시겠습니까?`)) return
 
     try {
       setLoading(true)
       await axios.delete(`${API_URL}/api/game/${gameId}/lineup/${lineupId}`)
       // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
     } catch (err) {
-      alert('제거 실패: ' + (err.response?.data?.error || err.message))
+      alert(`${action} 실패: ` + (err.response?.data?.error || err.message))
       onUpdate() // 에러 발생 시에만 재로드
     } finally {
       setLoading(false)
@@ -235,15 +238,16 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                       </div>
                     </div>
 
-                    {gameStatus === '준비중' && (
+                    {canRemovePlayer && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleRemove(idx + 1, lineup.member)
                         }}
                         className="text-red-600 hover:text-red-800 text-sm px-2"
+                        title={gameStatus === '준비중' ? '제거' : '조퇴 처리'}
                       >
-                        ❌
+                        {gameStatus === '준비중' ? '❌' : '👋'}
                       </button>
                     )}
                   </div>
@@ -303,15 +307,16 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                       </div>
                     </div>
 
-                    {gameStatus === '준비중' && (
+                    {canRemovePlayer && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleRemove(idx + 1, lineup.member)
                         }}
                         className="text-red-600 hover:text-red-800 text-sm px-2"
+                        title={gameStatus === '준비중' ? '제거' : '조퇴 처리'}
                       >
-                        ❌
+                        {gameStatus === '준비중' ? '❌' : '👋'}
                       </button>
                     )}
                   </div>
