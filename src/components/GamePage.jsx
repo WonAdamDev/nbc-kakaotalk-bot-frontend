@@ -232,6 +232,7 @@ export default function GamePage() {
           quarters={quarters}
           onUpdate={loadGameData}
           onLineupUpdate={updateLineups}
+          roomName={game.room}
         />
 
         {/* 쿼터 섹션 */}

@@ -4,7 +4,7 @@ import RoomMemberModal from './RoomMemberModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate }) {
+export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate, roomName }) {
   const [selectedTeam, setSelectedTeam] = useState('블루')
   const [memberName, setMemberName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -131,7 +131,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
       <RoomMemberModal
         isOpen={showMemberModal}
         onClose={() => setShowMemberModal(false)}
-        gameId={gameId}
+        roomName={roomName}
         onSelectMember={handleSelectMember}
       />
 

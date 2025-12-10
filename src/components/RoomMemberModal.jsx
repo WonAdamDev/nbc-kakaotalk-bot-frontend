@@ -3,67 +3,77 @@ import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export default function RoomMemberModal({ isOpen, onClose, gameId, onSelectMember }) {
+export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMember }) {
   const [members, setMembers] = useState([])
   const [newMemberName, setNewMemberName] = useState('')
   const [loading, setLoading] = useState(false)
-  const [roomName, setRoomName] = useState('')
 
   // 멤버 목록 로드
   const loadMembers = async () => {
+    if (!roomName) return
+
     try {
       setLoading(true)
-      const response = await axios.get(`${API_URL}/api/game/${gameId}/room/members`)
+      const response = await axios.get(`${API_URL}/api/commands/member/list`, {
+        params: { room: roomName }
+      })
       if (response.data.success) {
         setMembers(response.data.data.members)
-        setRoomName(response.data.data.room)
       }
     } catch (err) {
       console.error('Failed to load members:', err)
-      alert('멤버 목록을 불러올 수 없습니다: ' + (err.response?.data?.error || err.message))
+      alert('멤버 목록을 불러올 수 없습니다: ' + (err.response?.data?.message || err.message))
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (isOpen && gameId) {
+    if (isOpen && roomName) {
       loadMembers()
     }
-  }, [isOpen, gameId])
+  }, [isOpen, roomName])
 
   // 멤버 추가
   const handleAddMember = async (e) => {
     e.preventDefault()
-    if (!newMemberName.trim()) return
+    if (!newMemberName.trim() || !roomName) return
 
     try {
       setLoading(true)
-      const response = await axios.post(`${API_URL}/api/game/${gameId}/room/members`, {
-        name: newMemberName.trim()
+      const response = await axios.post(`${API_URL}/api/commands/member`, {
+        room: roomName,
+        member: newMemberName.trim()
       })
 
       if (response.data.success) {
-        setMembers([...members, response.data.data])
+        // 목록 새로고침
+        await loadMembers()
         setNewMemberName('')
       }
     } catch (err) {
-      alert('멤버 추가 실패: ' + (err.response?.data?.error || err.message))
+      alert('멤버 추가 실패: ' + (err.response?.data?.message || err.message))
     } finally {
       setLoading(false)
     }
   }
 
   // 멤버 삭제
-  const handleDeleteMember = async (memberId, memberName) => {
+  const handleDeleteMember = async (memberName) => {
     if (!confirm(`${memberName}님을 프리셋에서 삭제하시겠습니까?`)) return
 
     try {
       setLoading(true)
-      await axios.delete(`${API_URL}/api/game/${gameId}/room/members/${memberId}`)
-      setMembers(members.filter(m => m.id !== memberId))
+      await axios.delete(`${API_URL}/api/commands/member`, {
+        data: {
+          room: roomName,
+          member: memberName
+        }
+      })
+      // 목록 새로고침
+      await loadMembers()
     } catch (err) {
-      alert('멤버 삭제 실패: ' + (err.response?.data?.error || err.message))
+      alert('멤버 삭제 실패: ' + (err.response?.data?.message || err.message))
     } finally {
       setLoading(false)
     }
@@ -130,7 +140,7 @@ export default function RoomMemberModal({ isOpen, onClose, gameId, onSelectMembe
             ) : (
               members.map((member) => (
                 <div
-                  key={member.id}
+                  key={member.name}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <button
@@ -140,7 +150,7 @@ export default function RoomMemberModal({ isOpen, onClose, gameId, onSelectMembe
                     {member.name}
                   </button>
                   <button
-                    onClick={() => handleDeleteMember(member.id, member.name)}
+                    onClick={() => handleDeleteMember(member.name)}
                     className="text-red-600 hover:text-red-800 text-sm px-2"
                   >
                     ❌
