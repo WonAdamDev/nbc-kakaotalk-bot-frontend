@@ -102,7 +102,8 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
   const getMemberName = (team, number, quarter) => {
     // 쿼터에 스냅샷이 있으면 스냅샷에서 찾기 (과거 쿼터 보호)
     if (quarter?.lineup_snapshot && quarter.lineup_snapshot[team]) {
-      const name = quarter.lineup_snapshot[team][number]
+      // JSON 변환 시 키가 문자열이 되므로 String(number)로 조회
+      const name = quarter.lineup_snapshot[team][String(number)]
       if (name) return name
     }
 
