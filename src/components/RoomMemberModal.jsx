@@ -58,27 +58,6 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
     }
   }
 
-  // 멤버 삭제
-  const handleDeleteMember = async (memberName) => {
-    if (!confirm(`${memberName}님을 프리셋에서 삭제하시겠습니까?`)) return
-
-    try {
-      setLoading(true)
-      await axios.delete(`${API_URL}/api/commands/member`, {
-        data: {
-          room: roomName,
-          member: memberName
-        }
-      })
-      // 목록 새로고침
-      await loadMembers()
-    } catch (err) {
-      alert('멤버 삭제 실패: ' + (err.response?.data?.message || err.message))
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // 멤버 선택
   const handleSelectMember = (memberName) => {
     onSelectMember(memberName)
@@ -139,23 +118,13 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
               </p>
             ) : (
               members.map((member) => (
-                <div
+                <button
                   key={member.name}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  onClick={() => handleSelectMember(member.name)}
+                  className="w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left font-medium text-gray-900 hover:text-blue-600"
                 >
-                  <button
-                    onClick={() => handleSelectMember(member.name)}
-                    className="flex-1 text-left font-medium text-gray-900 hover:text-blue-600"
-                  >
-                    {member.name}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteMember(member.name)}
-                    className="text-red-600 hover:text-red-800 text-sm px-2"
-                  >
-                    ❌
-                  </button>
-                </div>
+                  {member.name}
+                </button>
               ))
             )}
           </div>
