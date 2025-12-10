@@ -68,7 +68,8 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
 
-    if (draggedPlayer && draggedPlayer.team === team && draggedPlayer.number !== number) {
+    // 다른 팀 간 교체도 허용, 자기 자신은 제외
+    if (draggedPlayer && !(draggedPlayer.team === team && draggedPlayer.number === number)) {
       setDragOverPlayer({ team, number })
     }
   }
@@ -79,18 +80,19 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   }
 
   // 드롭
-  const handleDrop = async (e, team, toNumber) => {
+  const handleDrop = async (e, toTeam, toNumber) => {
     e.preventDefault()
     setDragOverPlayer(null)
 
-    if (!draggedPlayer || draggedPlayer.team !== team) {
-      setDraggedPlayer(null)
+    if (!draggedPlayer) {
       return
     }
 
+    const fromTeam = draggedPlayer.team
     const fromNumber = draggedPlayer.number
 
-    if (fromNumber === toNumber) {
+    // 자기 자신에게 드롭하는 경우
+    if (fromTeam === toTeam && fromNumber === toNumber) {
       setDraggedPlayer(null)
       return
     }
@@ -98,14 +100,19 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
     try {
       setLoading(true)
       const response = await axios.put(`${API_URL}/api/game/${gameId}/lineup/swap`, {
-        team,
+        from_team: fromTeam,
         from_number: fromNumber,
+        to_team: toTeam,
         to_number: toNumber
       })
 
-      // 성공 시 즉시 해당 팀 라인업만 업데이트 (낙관적 업데이트)
+      // 성공 시 영향받은 팀들의 라인업 업데이트
       if (response.data.success && response.data.data?.lineups && onLineupUpdate) {
-        onLineupUpdate(team, response.data.data.lineups)
+        const updatedLineups = response.data.data.lineups
+        // 영향받은 모든 팀 업데이트
+        Object.keys(updatedLineups).forEach(team => {
+          onLineupUpdate(team, updatedLineups[team])
+        })
       } else {
         // onLineupUpdate가 없으면 전체 리로드 (fallback)
         onUpdate()
