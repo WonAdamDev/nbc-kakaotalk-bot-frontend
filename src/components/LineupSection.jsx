@@ -242,7 +242,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleRemove(idx + 1, lineup.member)
+                          handleRemove(lineup.id, lineup.member)
                         }}
                         className="text-red-600 hover:text-red-800 text-sm px-2"
                         title={gameStatus === '준비중' ? '제거' : '조퇴 처리'}
@@ -311,7 +311,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleRemove(idx + 1, lineup.member)
+                          handleRemove(lineup.id, lineup.member)
                         }}
                         className="text-red-600 hover:text-red-800 text-sm px-2"
                         title={gameStatus === '준비중' ? '제거' : '조퇴 처리'}
