@@ -22,17 +22,12 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
       return
     }
 
-    try {
-      setLoading(true)
-      // 미리보기 API 호출
-      const response = await axios.get(`${API_URL}/api/game/${gameId}/quarter/preview`)
-      setPreview(response.data.data)
-      setShowModal(true)
-    } catch (err) {
-      alert('쿼터 미리보기 실패: ' + (err.response?.data?.error || err.message))
-    } finally {
-      setLoading(false)
-    }
+    // 다음 쿼터 번호 계산
+    const nextQuarterNumber = quarters.length + 1
+
+    // 수동 선택 모달 열기
+    setPreview({ quarter_number: nextQuarterNumber })
+    setShowModal(true)
   }
 
   const handleConfirmStart = async (lineup) => {
@@ -137,7 +132,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
               🏀 {quarters.length === 0 ? '1쿼터 시작' : `${quarters.length + 1}쿼터 시작`}
             </button>
             <p className="text-sm text-gray-500 mt-2">
-              ※ 자동 로테이션: 이전 쿼터 벤치 선수들이 정순으로 먼저 출전합니다.
+              ※ 출전 선수를 직접 선택하여 쿼터를 시작합니다.
             </p>
           </div>
         )}

@@ -11,27 +11,26 @@ export default function QuarterStartModal({
   const [benchBlue, setBenchBlue] = useState([])
   const [playingWhite, setPlayingWhite] = useState([])
   const [benchWhite, setBenchWhite] = useState([])
-  const [isEditing, setIsEditing] = useState(false)
   const [draggedItem, setDraggedItem] = useState(null)
   const [dragOverItem, setDragOverItem] = useState(null)
 
-  // 미리보기 데이터로 초기화
+  // 초기화: 전체 라인업을 벤치로 설정
   useEffect(() => {
-    if (preview) {
-      setPlayingBlue(preview.playing_blue || [])
-      setBenchBlue(preview.bench_blue || [])
-      setPlayingWhite(preview.playing_white || [])
-      setBenchWhite(preview.bench_white || [])
-      setIsEditing(false)
+    if (preview && lineups) {
+      setPlayingBlue([])
+      setBenchBlue(lineups.블루?.map(l => l.number) || [])
+      setPlayingWhite([])
+      setBenchWhite(lineups.화이트?.map(l => l.number) || [])
     }
-  }, [preview])
+  }, [preview, lineups])
 
   if (!isOpen || !preview) return null
 
   // 선수 번호로 이름 찾기
   const getMemberName = (team, number) => {
     const teamKey = team === 'blue' ? '블루' : '화이트'
-    return preview.lineups?.[teamKey]?.[number] || `#${number}`
+    const lineup = lineups?.[teamKey]?.find(l => l.number === number)
+    return lineup ? lineup.member : `#${number}`
   }
 
   // 이대로 시작
@@ -248,9 +247,7 @@ export default function QuarterStartModal({
         {/* 본문 */}
         <div className="p-6">
           <p className="text-gray-600 mb-4">
-            {isEditing
-              ? '✨ 드래그하여 순서 변경 / 클릭하여 출전↔벤치 이동 (각 팀 출전 5명 필수)'
-              : '자동 로테이션된 출전 명단입니다. 수정하시려면 "선수 변경" 버튼을 누르세요.'}
+            ✨ 각 팀당 출전 선수 5명을 선택하세요. 드래그하여 순서 변경 / 클릭하여 출전↔벤치 이동
           </p>
 
           {/* 블루팀 */}
@@ -263,7 +260,7 @@ export default function QuarterStartModal({
                 <p className="text-sm font-semibold text-gray-700">
                   출전 (코트) - {playingBlue.length}명
                 </p>
-                {playingBlue.length !== 5 && isEditing && (
+                {playingBlue.length !== 5 && (
                   <span className="text-xs text-red-500">5명 필요</span>
                 )}
               </div>
@@ -275,22 +272,21 @@ export default function QuarterStartModal({
                   return (
                     <div
                       key={num}
-                      draggable={isEditing}
-                      onDragStart={(e) => isEditing && handleDragStart(e, 'blue', 'playing', index, num)}
-                      onDragOver={(e) => isEditing && handleDragOver(e, 'blue', 'playing', index)}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, 'blue', 'playing', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'blue', 'playing', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => isEditing && handleDrop(e, 'blue', 'playing', index)}
+                      onDrop={(e) => handleDrop(e, 'blue', 'playing', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => isEditing && movePlayer('blue', 'playing', num)}
+                      onClick={() => movePlayer('blue', 'playing', num)}
                       className={`
                         px-3 py-2 bg-blue-500 text-white rounded font-medium transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
                         ${isDropTarget ? 'ring-2 ring-blue-300' : ''}
-                        ${isEditing ? 'hover:bg-blue-600 cursor-move' : ''}
+                        hover:bg-blue-600 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('blue', num)}
-                      {isEditing && ' ⇄'}
+                      {num}. {getMemberName('blue', num)} ⇄
                     </div>
                   )
                 })}
@@ -310,22 +306,21 @@ export default function QuarterStartModal({
                   return (
                     <div
                       key={num}
-                      draggable={isEditing}
-                      onDragStart={(e) => isEditing && handleDragStart(e, 'blue', 'bench', index, num)}
-                      onDragOver={(e) => isEditing && handleDragOver(e, 'blue', 'bench', index)}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, 'blue', 'bench', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'blue', 'bench', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => isEditing && handleDrop(e, 'blue', 'bench', index)}
+                      onDrop={(e) => handleDrop(e, 'blue', 'bench', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => isEditing && movePlayer('blue', 'bench', num)}
+                      onClick={() => movePlayer('blue', 'bench', num)}
                       className={`
                         px-3 py-2 bg-blue-100 text-blue-700 rounded transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
                         ${isDropTarget ? 'ring-2 ring-blue-300' : ''}
-                        ${isEditing ? 'hover:bg-blue-200 cursor-move' : ''}
+                        hover:bg-blue-200 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('blue', num)}
-                      {isEditing && ' ⇄'}
+                      {num}. {getMemberName('blue', num)} ⇄
                     </div>
                   )
                 })}
@@ -346,7 +341,7 @@ export default function QuarterStartModal({
                 <p className="text-sm font-semibold text-gray-700">
                   출전 (코트) - {playingWhite.length}명
                 </p>
-                {playingWhite.length !== 5 && isEditing && (
+                {playingWhite.length !== 5 && (
                   <span className="text-xs text-red-500">5명 필요</span>
                 )}
               </div>
@@ -358,22 +353,21 @@ export default function QuarterStartModal({
                   return (
                     <div
                       key={num}
-                      draggable={isEditing}
-                      onDragStart={(e) => isEditing && handleDragStart(e, 'white', 'playing', index, num)}
-                      onDragOver={(e) => isEditing && handleDragOver(e, 'white', 'playing', index)}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, 'white', 'playing', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'white', 'playing', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => isEditing && handleDrop(e, 'white', 'playing', index)}
+                      onDrop={(e) => handleDrop(e, 'white', 'playing', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => isEditing && movePlayer('white', 'playing', num)}
+                      onClick={() => movePlayer('white', 'playing', num)}
                       className={`
                         px-3 py-2 bg-gray-600 text-white rounded font-medium transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
                         ${isDropTarget ? 'ring-2 ring-gray-400' : ''}
-                        ${isEditing ? 'hover:bg-gray-700 cursor-move' : ''}
+                        hover:bg-gray-700 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('white', num)}
-                      {isEditing && ' ⇄'}
+                      {num}. {getMemberName('white', num)} ⇄
                     </div>
                   )
                 })}
@@ -393,22 +387,21 @@ export default function QuarterStartModal({
                   return (
                     <div
                       key={num}
-                      draggable={isEditing}
-                      onDragStart={(e) => isEditing && handleDragStart(e, 'white', 'bench', index, num)}
-                      onDragOver={(e) => isEditing && handleDragOver(e, 'white', 'bench', index)}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, 'white', 'bench', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'white', 'bench', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => isEditing && handleDrop(e, 'white', 'bench', index)}
+                      onDrop={(e) => handleDrop(e, 'white', 'bench', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => isEditing && movePlayer('white', 'bench', num)}
+                      onClick={() => movePlayer('white', 'bench', num)}
                       className={`
                         px-3 py-2 bg-gray-100 text-gray-700 rounded border border-gray-300 transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
                         ${isDropTarget ? 'ring-2 ring-gray-400' : ''}
-                        ${isEditing ? 'hover:bg-gray-200 cursor-move' : ''}
+                        hover:bg-gray-200 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('white', num)}
-                      {isEditing && ' ⇄'}
+                      {num}. {getMemberName('white', num)} ⇄
                     </div>
                   )
                 })}
@@ -422,57 +415,23 @@ export default function QuarterStartModal({
 
         {/* 푸터 */}
         <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 flex items-center justify-between">
-          {!isEditing ? (
-            <>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-              >
-                ✏️ 선수 변경
-              </button>
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleStartAsIs}
-                  className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 font-semibold"
-                >
-                  🏀 이대로 시작
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="w-full flex justify-between">
-              <button
-                onClick={() => {
-                  // 원래대로 복원
-                  setPlayingBlue(preview.playing_blue || [])
-                  setBenchBlue(preview.bench_blue || [])
-                  setPlayingWhite(preview.playing_white || [])
-                  setBenchWhite(preview.bench_white || [])
-                  setIsEditing(false)
-                }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-              >
-                원래대로
-              </button>
-              <button
-                onClick={handleStartAsIs}
-                disabled={!canConfirm}
-                className={`px-6 py-2 rounded font-semibold ${
-                  canConfirm
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                🏀 수정 완료 및 시작
-              </button>
-            </div>
-          )}
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+          >
+            취소
+          </button>
+          <button
+            onClick={handleStartAsIs}
+            disabled={!canConfirm}
+            className={`px-6 py-2 rounded font-semibold ${
+              canConfirm
+                ? 'bg-green-500 text-white hover:bg-green-600'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            🏀 쿼터 시작 ({playingBlue.length}/5 vs {playingWhite.length}/5)
+          </button>
         </div>
       </div>
     </div>
