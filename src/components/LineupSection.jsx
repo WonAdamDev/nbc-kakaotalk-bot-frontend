@@ -334,8 +334,8 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   )
                 })}
 
-                {/* 마지막 빈칸 드롭존 */}
-                {canSwapLineup && draggedPlayer && (
+                {/* 마지막 빈칸 드롭존 - 다른 팀에서 이동하거나, 같은 팀에 2명 이상일 때만 표시 */}
+                {canSwapLineup && draggedPlayer && (draggedPlayer.team !== '블루' || lineups.블루?.length >= 2) && (
                   <div
                     onDragOver={(e) => {
                       const nextNumber = lineups.블루?.length > 0
@@ -442,8 +442,8 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   )
                 })}
 
-                {/* 마지막 빈칸 드롭존 */}
-                {canSwapLineup && draggedPlayer && (
+                {/* 마지막 빈칸 드롭존 - 다른 팀에서 이동하거나, 같은 팀에 2명 이상일 때만 표시 */}
+                {canSwapLineup && draggedPlayer && (draggedPlayer.team !== '화이트' || lineups.화이트?.length >= 2) && (
                   <div
                     onDragOver={(e) => {
                       const nextNumber = lineups.화이트?.length > 0
