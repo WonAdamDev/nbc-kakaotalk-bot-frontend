@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
@@ -64,6 +64,36 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
     onClose()
   }
 
+  // 팀별로 그룹화된 멤버 목록 (useMemo로 최적화)
+  const groupedMembers = useMemo(() => {
+    const groups = {}
+    const noTeam = []
+
+    members.forEach((member) => {
+      if (member.team) {
+        // 팀이 있는 경우
+        if (!groups[member.team]) {
+          groups[member.team] = []
+        }
+        groups[member.team].push(member)
+      } else {
+        // 팀이 없는 경우
+        noTeam.push(member)
+      }
+    })
+
+    // 각 팀 내에서 이름순 정렬
+    Object.keys(groups).forEach((team) => {
+      groups[team].sort((a, b) => a.name.localeCompare(b.name))
+    })
+    noTeam.sort((a, b) => a.name.localeCompare(b.name))
+
+    // 팀 이름 정렬 (알파벳순)
+    const sortedTeams = Object.keys(groups).sort()
+
+    return { teams: sortedTeams, groups, noTeam }
+  }, [members])
+
   if (!isOpen) return null
 
   return (
@@ -108,8 +138,8 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
             </div>
           </form>
 
-          {/* 멤버 목록 */}
-          <div className="space-y-2">
+          {/* 멤버 목록 (팀별 그룹화) */}
+          <div className="space-y-4">
             {loading ? (
               <p className="text-center text-gray-500 py-4">로딩 중...</p>
             ) : members.length === 0 ? (
@@ -117,15 +147,59 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
                 등록된 멤버가 없습니다. 멤버를 추가해보세요.
               </p>
             ) : (
-              members.map((member) => (
-                <button
-                  key={member.name}
-                  onClick={() => handleSelectMember(member.name)}
-                  className="w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left font-medium text-gray-900 hover:text-blue-600"
-                >
-                  {member.name}
-                </button>
-              ))
+              <>
+                {/* 팀별 멤버 표시 */}
+                {groupedMembers.teams.map((teamName) => (
+                  <div key={teamName}>
+                    {/* 팀 헤더 */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <h3 className="font-semibold text-gray-700">{teamName}</h3>
+                      <span className="text-xs text-gray-500">
+                        {groupedMembers.groups[teamName].length}명
+                      </span>
+                    </div>
+                    {/* 팀 멤버 목록 */}
+                    <div className="space-y-1 ml-5 mb-3">
+                      {groupedMembers.groups[teamName].map((member) => (
+                        <button
+                          key={member.name}
+                          onClick={() => handleSelectMember(member.name)}
+                          className="w-full p-2.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors text-left text-gray-900 hover:text-blue-600 border border-blue-200"
+                        >
+                          {member.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* 팀 미배정 멤버 */}
+                {groupedMembers.noTeam.length > 0 && (
+                  <div>
+                    {/* 미배정 헤더 */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                      <h3 className="font-semibold text-gray-700">팀 미배정</h3>
+                      <span className="text-xs text-gray-500">
+                        {groupedMembers.noTeam.length}명
+                      </span>
+                    </div>
+                    {/* 미배정 멤버 목록 */}
+                    <div className="space-y-1 ml-5">
+                      {groupedMembers.noTeam.map((member) => (
+                        <button
+                          key={member.name}
+                          onClick={() => handleSelectMember(member.name)}
+                          className="w-full p-2.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left text-gray-900 hover:text-gray-600 border border-gray-200"
+                        >
+                          {member.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
