@@ -5,12 +5,16 @@ import ArrivalModal from './ArrivalModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate, roomName, onTeamChange }) {
+export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate, roomName, onTeamChange, game }) {
   const [loading, setLoading] = useState(false)
   const [draggedPlayer, setDraggedPlayer] = useState(null)
   const [dragOverPlayer, setDragOverPlayer] = useState(null)
   const [showEarlyLeaveModal, setShowEarlyLeaveModal] = useState(false)
   const [showArrivalModal, setShowArrivalModal] = useState(false)
+
+  // 팀 이름 표시 (팀 선택 전: HOME/AWAY, 선택 후: 팀 이름)
+  const homeTeamName = game?.team_home || 'HOME'
+  const awayTeamName = game?.team_away || 'AWAY'
 
   // 팀 선택 드롭다운
   const [availableTeams, setAvailableTeams] = useState([])
@@ -281,7 +285,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <h3 className="text-lg font-semibold">HOME</h3>
+            <h3 className="text-lg font-semibold">{homeTeamName}</h3>
             <span className="badge badge-blue">{lineups.블루?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">
@@ -408,7 +412,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-gray-400 rounded border border-gray-600"></div>
-            <h3 className="text-lg font-semibold">AWAY</h3>
+            <h3 className="text-lg font-semibold">{awayTeamName}</h3>
             <span className="badge badge-white">{lineups.화이트?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">

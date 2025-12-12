@@ -246,6 +246,7 @@ export default function GamePage() {
           onLineupUpdate={updateLineups}
           roomName={game.room}
           onTeamChange={handleTeamChange}
+          game={game}
         />
 
         {/* 쿼터 섹션 */}

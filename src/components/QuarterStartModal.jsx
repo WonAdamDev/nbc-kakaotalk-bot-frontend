@@ -19,13 +19,32 @@ export default function QuarterStartModal({
   const homeTeamName = game?.team_home || 'HOME'
   const awayTeamName = game?.team_away || 'AWAY'
 
-  // 초기화: 전체 라인업을 벤치로 설정
+  // 초기화: playing_status에 따라 출전/벤치 자동 배치
   useEffect(() => {
     if (preview && lineups) {
-      setPlayingBlue([])
-      setBenchBlue(lineups.블루?.map(l => l.number) || [])
-      setPlayingWhite([])
-      setBenchWhite(lineups.화이트?.map(l => l.number) || [])
+      // 블루팀
+      const blueLineups = lineups.블루 || []
+      const bluePlayingPlayers = blueLineups
+        .filter(l => (l.playing_status || 'playing') === 'playing')
+        .map(l => l.number)
+      const blueBenchPlayers = blueLineups
+        .filter(l => (l.playing_status || 'playing') === 'bench')
+        .map(l => l.number)
+
+      setPlayingBlue(bluePlayingPlayers)
+      setBenchBlue(blueBenchPlayers)
+
+      // 화이트팀
+      const whiteLineups = lineups.화이트 || []
+      const whitePlayingPlayers = whiteLineups
+        .filter(l => (l.playing_status || 'playing') === 'playing')
+        .map(l => l.number)
+      const whiteBenchPlayers = whiteLineups
+        .filter(l => (l.playing_status || 'playing') === 'bench')
+        .map(l => l.number)
+
+      setPlayingWhite(whitePlayingPlayers)
+      setBenchWhite(whiteBenchPlayers)
     }
   }, [preview, lineups])
 
