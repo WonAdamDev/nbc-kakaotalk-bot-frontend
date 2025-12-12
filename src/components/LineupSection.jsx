@@ -189,7 +189,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
             <h3 className="font-semibold mb-3">경기 팀 선택</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">HOME (블루)</label>
+                <label className="block text-sm font-medium mb-2">HOME</label>
                 <select
                   value={selectedTeamHome}
                   onChange={(e) => setSelectedTeamHome(e.target.value)}
@@ -199,13 +199,13 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   <option value="">팀 선택 안함</option>
                   {availableTeams.map((team) => (
                     <option key={team.name} value={team.name}>
-                      {team.name} ({team.member_count}명)
+                      {team.name}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">AWAY (화이트)</label>
+                <label className="block text-sm font-medium mb-2">AWAY</label>
                 <select
                   value={selectedTeamAway}
                   onChange={(e) => setSelectedTeamAway(e.target.value)}
@@ -215,7 +215,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   <option value="">팀 선택 안함</option>
                   {availableTeams.map((team) => (
                     <option key={team.name} value={team.name}>
-                      {team.name} ({team.member_count}명)
+                      {team.name}
                     </option>
                   ))}
                 </select>
@@ -274,11 +274,11 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
       {/* 팀별 라인업 */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* HOME (블루) */}
+        {/* HOME */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <h3 className="text-lg font-semibold">HOME (블루)</h3>
+            <h3 className="text-lg font-semibold">HOME</h3>
             <span className="badge badge-blue">{lineups.블루?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">
@@ -343,11 +343,11 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
           </div>
         </div>
 
-        {/* AWAY (화이트) */}
+        {/* AWAY */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-gray-400 rounded border border-gray-600"></div>
-            <h3 className="text-lg font-semibold">AWAY (화이트)</h3>
+            <h3 className="text-lg font-semibold">AWAY</h3>
             <span className="badge badge-white">{lineups.화이트?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">

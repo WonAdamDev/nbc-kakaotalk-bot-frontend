@@ -6,17 +6,40 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 export default function GameControls({ game, gameId, onUpdate, teamHome, teamAway }) {
   const [loading, setLoading] = useState(false)
 
+  // 경기 시작 가능 여부 검증
+  const canStartGame = () => {
+    // 팀 선택 여부 확인
+    if (!teamHome || !teamAway) {
+      return false
+    }
+    // 서로 다른 팀인지 확인
+    if (teamHome === teamAway) {
+      return false
+    }
+    return true
+  }
+
   const handleStartGame = async () => {
+    // 팀 선택 검증
+    if (!teamHome || !teamAway) {
+      alert('HOME과 AWAY 팀을 모두 선택해주세요.')
+      return
+    }
+
+    if (teamHome === teamAway) {
+      alert('HOME과 AWAY는 서로 다른 팀이어야 합니다.')
+      return
+    }
+
     if (!confirm('경기를 시작하시겠습니까?')) return
 
     try {
       setLoading(true)
 
-      // 팀 선택 여부에 따라 요청 본문 구성
-      const requestBody = {}
-      if (teamHome && teamAway) {
-        requestBody.team_home = teamHome
-        requestBody.team_away = teamAway
+      // 팀 정보 전송
+      const requestBody = {
+        team_home: teamHome,
+        team_away: teamAway
       }
 
       await axios.post(`${API_URL}/api/game/${gameId}/start`, requestBody)
@@ -69,7 +92,7 @@ export default function GameControls({ game, gameId, onUpdate, teamHome, teamAwa
           {game.status === '준비중' && (
             <button
               onClick={handleStartGame}
-              disabled={loading}
+              disabled={loading || !canStartGame()}
               className="btn btn-success"
             >
               ▶️ 경기 시작
