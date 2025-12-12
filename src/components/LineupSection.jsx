@@ -375,17 +375,21 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 {canSwapLineup && draggedPlayer && (
                   <div
                     onDragOver={(e) => {
-                      const nextNumber = (lineups.블루?.length || 0) + 1
+                      const nextNumber = lineups.블루?.length > 0
+                        ? Math.max(...lineups.블루.map(l => l.number)) + 1
+                        : 1
                       handleDragOver(e, '블루', nextNumber)
                     }}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => {
-                      const nextNumber = (lineups.블루?.length || 0) + 1
+                      const nextNumber = lineups.블루?.length > 0
+                        ? Math.max(...lineups.블루.map(l => l.number)) + 1
+                        : 1
                       handleDrop(e, '블루', nextNumber)
                     }}
                     className={`
                       p-6 rounded-lg border-2 border-dashed transition-all
-                      ${dragOverPlayer?.team === '블루' && dragOverPlayer?.number === (lineups.블루?.length || 0) + 1 ? 'border-blue-500 bg-blue-100' : 'border-blue-300 bg-blue-50/30'}
+                      ${dragOverPlayer?.team === '블루' && dragOverPlayer?.number === (lineups.블루?.length > 0 ? Math.max(...lineups.블루.map(l => l.number)) + 1 : 1) ? 'border-blue-500 bg-blue-100' : 'border-blue-300 bg-blue-50/30'}
                       hover:border-blue-400 hover:bg-blue-50
                     `}
                   >
@@ -479,17 +483,21 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 {canSwapLineup && draggedPlayer && (
                   <div
                     onDragOver={(e) => {
-                      const nextNumber = (lineups.화이트?.length || 0) + 1
+                      const nextNumber = lineups.화이트?.length > 0
+                        ? Math.max(...lineups.화이트.map(l => l.number)) + 1
+                        : 1
                       handleDragOver(e, '화이트', nextNumber)
                     }}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => {
-                      const nextNumber = (lineups.화이트?.length || 0) + 1
+                      const nextNumber = lineups.화이트?.length > 0
+                        ? Math.max(...lineups.화이트.map(l => l.number)) + 1
+                        : 1
                       handleDrop(e, '화이트', nextNumber)
                     }}
                     className={`
                       p-6 rounded-lg border-2 border-dashed transition-all
-                      ${dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === (lineups.화이트?.length || 0) + 1 ? 'border-gray-700 bg-gray-200' : 'border-gray-400 bg-gray-50/30'}
+                      ${dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === (lineups.화이트?.length > 0 ? Math.max(...lineups.화이트.map(l => l.number)) + 1 : 1) ? 'border-gray-700 bg-gray-200' : 'border-gray-400 bg-gray-50/30'}
                       hover:border-gray-600 hover:bg-gray-100
                     `}
                   >
