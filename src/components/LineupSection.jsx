@@ -334,41 +334,67 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 </p>
               </div>
             ) : (
-              lineups.블루?.map((lineup, idx) => {
-                const isDragging = draggedPlayer?.team === '블루' && draggedPlayer?.number === lineup.number
-                const isDropTarget = dragOverPlayer?.team === '블루' && dragOverPlayer?.number === lineup.number
-                const canDrag = canSwapLineup
+              <>
+                {lineups.블루?.map((lineup, idx) => {
+                  const isDragging = draggedPlayer?.team === '블루' && draggedPlayer?.number === lineup.number
+                  const isDropTarget = dragOverPlayer?.team === '블루' && dragOverPlayer?.number === lineup.number
+                  const canDrag = canSwapLineup
 
-                return (
-                  <div
-                    key={idx}
-                    draggable={canDrag}
-                    onDragStart={(e) => canDrag && handleDragStart(e, '블루', lineup.number, lineup.member)}
-                    onDragOver={(e) => canDrag && handleDragOver(e, '블루', lineup.number)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => canDrag && handleDrop(e, '블루', lineup.number)}
-                    onDragEnd={handleDragEnd}
-                    className={`
-                      flex items-center justify-between p-3 rounded-lg border transition-all
-                      ${isDragging ? 'opacity-50 scale-95' : ''}
-                      ${isDropTarget ? 'border-blue-500 border-2 bg-blue-100' : 'bg-blue-50 border-blue-200'}
-                      ${canDrag ? 'cursor-move hover:shadow-md' : ''}
-                    `}
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="flex flex-col items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-lg font-bold text-lg">
-                        {lineup.number}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
-                        </p>
+                  return (
+                    <div
+                      key={idx}
+                      draggable={canDrag}
+                      onDragStart={(e) => canDrag && handleDragStart(e, '블루', lineup.number, lineup.member)}
+                      onDragOver={(e) => canDrag && handleDragOver(e, '블루', lineup.number)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => canDrag && handleDrop(e, '블루', lineup.number)}
+                      onDragEnd={handleDragEnd}
+                      className={`
+                        flex items-center justify-between p-3 rounded-lg border transition-all
+                        ${isDragging ? 'opacity-50 scale-95' : ''}
+                        ${isDropTarget ? 'border-blue-500 border-2 bg-blue-100' : 'bg-blue-50 border-blue-200'}
+                        ${canDrag ? 'cursor-move hover:shadow-md' : ''}
+                      `}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="flex flex-col items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-lg font-bold text-lg">
+                          {lineup.number}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
+                          </p>
+                        </div>
                       </div>
                     </div>
+                  )
+                })}
+
+                {/* 마지막 빈칸 드롭존 */}
+                {canSwapLineup && draggedPlayer && (
+                  <div
+                    onDragOver={(e) => {
+                      const nextNumber = (lineups.블루?.length || 0) + 1
+                      handleDragOver(e, '블루', nextNumber)
+                    }}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => {
+                      const nextNumber = (lineups.블루?.length || 0) + 1
+                      handleDrop(e, '블루', nextNumber)
+                    }}
+                    className={`
+                      p-6 rounded-lg border-2 border-dashed transition-all
+                      ${dragOverPlayer?.team === '블루' && dragOverPlayer?.number === (lineups.블루?.length || 0) + 1 ? 'border-blue-500 bg-blue-100' : 'border-blue-300 bg-blue-50/30'}
+                      hover:border-blue-400 hover:bg-blue-50
+                    `}
+                  >
+                    <p className="text-blue-600 text-sm text-center font-medium">
+                      + 여기에 드롭하여 마지막 순번으로 이동
+                    </p>
                   </div>
-                )
-              })
+                )}
+              </>
             )}
           </div>
         </div>
@@ -412,41 +438,67 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 </p>
               </div>
             ) : (
-              lineups.화이트?.map((lineup, idx) => {
-                const isDragging = draggedPlayer?.team === '화이트' && draggedPlayer?.number === lineup.number
-                const isDropTarget = dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === lineup.number
-                const canDrag = canSwapLineup
+              <>
+                {lineups.화이트?.map((lineup, idx) => {
+                  const isDragging = draggedPlayer?.team === '화이트' && draggedPlayer?.number === lineup.number
+                  const isDropTarget = dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === lineup.number
+                  const canDrag = canSwapLineup
 
-                return (
-                  <div
-                    key={idx}
-                    draggable={canDrag}
-                    onDragStart={(e) => canDrag && handleDragStart(e, '화이트', lineup.number, lineup.member)}
-                    onDragOver={(e) => canDrag && handleDragOver(e, '화이트', lineup.number)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => canDrag && handleDrop(e, '화이트', lineup.number)}
-                    onDragEnd={handleDragEnd}
-                    className={`
-                      flex items-center justify-between p-3 rounded-lg border transition-all
-                      ${isDragging ? 'opacity-50 scale-95' : ''}
-                      ${isDropTarget ? 'border-gray-700 border-2 bg-gray-200' : 'bg-gray-50 border-gray-300'}
-                      ${canDrag ? 'cursor-move hover:shadow-md' : ''}
-                    `}
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="flex flex-col items-center justify-center w-12 h-12 bg-gray-600 text-white rounded-lg font-bold text-lg">
-                        {lineup.number}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
-                        </p>
+                  return (
+                    <div
+                      key={idx}
+                      draggable={canDrag}
+                      onDragStart={(e) => canDrag && handleDragStart(e, '화이트', lineup.number, lineup.member)}
+                      onDragOver={(e) => canDrag && handleDragOver(e, '화이트', lineup.number)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => canDrag && handleDrop(e, '화이트', lineup.number)}
+                      onDragEnd={handleDragEnd}
+                      className={`
+                        flex items-center justify-between p-3 rounded-lg border transition-all
+                        ${isDragging ? 'opacity-50 scale-95' : ''}
+                        ${isDropTarget ? 'border-gray-700 border-2 bg-gray-200' : 'bg-gray-50 border-gray-300'}
+                        ${canDrag ? 'cursor-move hover:shadow-md' : ''}
+                      `}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="flex flex-col items-center justify-center w-12 h-12 bg-gray-600 text-white rounded-lg font-bold text-lg">
+                          {lineup.number}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
+                          </p>
+                        </div>
                       </div>
                     </div>
+                  )
+                })}
+
+                {/* 마지막 빈칸 드롭존 */}
+                {canSwapLineup && draggedPlayer && (
+                  <div
+                    onDragOver={(e) => {
+                      const nextNumber = (lineups.화이트?.length || 0) + 1
+                      handleDragOver(e, '화이트', nextNumber)
+                    }}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => {
+                      const nextNumber = (lineups.화이트?.length || 0) + 1
+                      handleDrop(e, '화이트', nextNumber)
+                    }}
+                    className={`
+                      p-6 rounded-lg border-2 border-dashed transition-all
+                      ${dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === (lineups.화이트?.length || 0) + 1 ? 'border-gray-700 bg-gray-200' : 'border-gray-400 bg-gray-50/30'}
+                      hover:border-gray-600 hover:bg-gray-100
+                    `}
+                  >
+                    <p className="text-gray-700 text-sm text-center font-medium">
+                      + 여기에 드롭하여 마지막 순번으로 이동
+                    </p>
                   </div>
-                )
-              })
+                )}
+              </>
             )}
           </div>
         </div>
