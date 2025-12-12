@@ -5,6 +5,7 @@ export default function QuarterStartModal({
   onClose,
   preview,
   lineups,
+  game,
   onConfirm
 }) {
   const [playingBlue, setPlayingBlue] = useState([])
@@ -13,6 +14,10 @@ export default function QuarterStartModal({
   const [benchWhite, setBenchWhite] = useState([])
   const [draggedItem, setDraggedItem] = useState(null)
   const [dragOverItem, setDragOverItem] = useState(null)
+
+  // 팀 이름 표시 (팀 선택 전: HOME/AWAY, 선택 후: 팀 이름)
+  const homeTeamName = game?.team_home || 'HOME'
+  const awayTeamName = game?.team_away || 'AWAY'
 
   // 초기화: 전체 라인업을 벤치로 설정
   useEffect(() => {
@@ -250,9 +255,9 @@ export default function QuarterStartModal({
             ✨ 각 팀당 출전 선수 5명을 선택하세요. 드래그하여 순서 변경 / 클릭하여 출전↔벤치 이동
           </p>
 
-          {/* 블루팀 */}
+          {/* HOME */}
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-blue-600 mb-3">블루팀</h3>
+            <h3 className="text-lg font-bold text-blue-600 mb-3">{homeTeamName}</h3>
 
             {/* 출전 */}
             <div className="mb-4">
@@ -331,9 +336,9 @@ export default function QuarterStartModal({
             </div>
           </div>
 
-          {/* 화이트팀 */}
+          {/* AWAY */}
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-gray-600 mb-3">화이트팀</h3>
+            <h3 className="text-lg font-bold text-gray-600 mb-3">{awayTeamName}</h3>
 
             {/* 출전 */}
             <div className="mb-4">

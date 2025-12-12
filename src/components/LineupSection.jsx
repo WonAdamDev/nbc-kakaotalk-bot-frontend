@@ -242,8 +242,8 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
               onChange={(e) => setSelectedTeam(e.target.value)}
               className="input"
             >
-              <option value="블루">블루팀</option>
-              <option value="화이트">화이트팀</option>
+              <option value="블루">HOME</option>
+              <option value="화이트">AWAY</option>
             </select>
 
             <input

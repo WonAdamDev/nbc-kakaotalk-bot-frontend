@@ -4,6 +4,10 @@ export default function ScoreBoard({ game, quarters }) {
   const totalScoreBlue = lastQuarter?.score?.blue || 0
   const totalScoreWhite = lastQuarter?.score?.white || 0
 
+  // 팀 이름 표시 (팀 선택 전: HOME/AWAY, 선택 후: 팀 이름)
+  const homeTeamName = game.team_home || 'HOME'
+  const awayTeamName = game.team_away || 'AWAY'
+
   return (
     <div className="card mb-6">
       <h2 className="text-xl font-bold mb-4">스코어보드</h2>
@@ -11,11 +15,11 @@ export default function ScoreBoard({ game, quarters }) {
       {/* 총점 */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-blue-50 rounded-lg p-6 text-center border-2 border-blue-200">
-          <p className="text-sm text-blue-600 font-semibold mb-2">블루팀</p>
+          <p className="text-sm text-blue-600 font-semibold mb-2">{homeTeamName}</p>
           <p className="text-5xl font-bold text-blue-700">{totalScoreBlue}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-6 text-center border-2 border-gray-300">
-          <p className="text-sm text-gray-600 font-semibold mb-2">화이트팀</p>
+          <p className="text-sm text-gray-600 font-semibold mb-2">{awayTeamName}</p>
           <p className="text-5xl font-bold text-gray-700">{totalScoreWhite}</p>
         </div>
       </div>
@@ -32,10 +36,10 @@ export default function ScoreBoard({ game, quarters }) {
                     쿼터
                   </th>
                   <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
-                    블루
+                    {homeTeamName}
                   </th>
                   <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
-                    화이트
+                    {awayTeamName}
                   </th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                     상태
@@ -91,7 +95,7 @@ export default function ScoreBoard({ game, quarters }) {
             🏆 승자: {game.winner}
           </p>
           <p className="text-sm text-yellow-700 mt-1">
-            최종 점수 - 블루: {game.final_score?.blue}, 화이트: {game.final_score?.white}
+            최종 점수 - {homeTeamName}: {game.final_score?.blue}, {awayTeamName}: {game.final_score?.white}
           </p>
         </div>
       )}

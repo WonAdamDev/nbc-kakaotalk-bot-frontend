@@ -10,6 +10,10 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
   const [showModal, setShowModal] = useState(false)
   const [preview, setPreview] = useState(null)
 
+  // 팀 이름 표시 (팀 선택 전: HOME/AWAY, 선택 후: 팀 이름)
+  const homeTeamName = game.team_home || 'HOME'
+  const awayTeamName = game.team_away || 'AWAY'
+
   const currentQuarter = quarters.find(q => q.status === '진행중')
   const canStartNewQuarter = game.status === '진행중' && !currentQuarter && quarters.length < 10 // 최대 10쿼터
 
@@ -130,6 +134,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
         onClose={() => setShowModal(false)}
         preview={preview}
         lineups={lineups}
+        game={game}
         onConfirm={handleConfirmStart}
       />
 
@@ -190,9 +195,9 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
 
               {/* 출전 선수 / 벤치 */}
               <div className="grid md:grid-cols-2 gap-4 mb-4">
-                {/* 블루팀 */}
+                {/* HOME */}
                 <div>
-                  <p className="text-sm font-semibold text-blue-600 mb-2">블루팀</p>
+                  <p className="text-sm font-semibold text-blue-600 mb-2">{homeTeamName}</p>
                   <div className="space-y-2">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">출전 (코트)</p>
@@ -223,9 +228,9 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                   </div>
                 </div>
 
-                {/* 화이트팀 */}
+                {/* AWAY */}
                 <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-2">화이트팀</p>
+                  <p className="text-sm font-semibold text-gray-600 mb-2">{awayTeamName}</p>
                   <div className="space-y-2">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">출전 (코트)</p>
@@ -262,7 +267,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                 <p className="text-sm font-semibold mb-2">누적 점수</p>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">블루:</span>
+                    <span className="text-sm text-gray-600">{homeTeamName}:</span>
                     <input
                       type="number"
                       min="0"
@@ -274,7 +279,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">화이트:</span>
+                    <span className="text-sm text-gray-600">{awayTeamName}:</span>
                     <input
                       type="number"
                       min="0"
