@@ -19,6 +19,10 @@ export default function GamePage() {
   const [error, setError] = useState(null)
   const wasConnectedRef = useRef(null) // null: 초기값, true/false: 연결 상태
 
+  // 팀 선택 상태
+  const [selectedTeamHome, setSelectedTeamHome] = useState('')
+  const [selectedTeamAway, setSelectedTeamAway] = useState('')
+
   // 게임 데이터 로드
   const loadGameData = useCallback(async () => {
     try {
@@ -45,6 +49,12 @@ export default function GamePage() {
       ...prev,
       [team]: newLineups
     }))
+  }, [])
+
+  // 팀 선택 변경 핸들러
+  const handleTeamChange = useCallback((teamHome, teamAway) => {
+    setSelectedTeamHome(teamHome)
+    setSelectedTeamAway(teamAway)
   }, [])
 
   // WebSocket 업데이트 핸들러
@@ -222,6 +232,8 @@ export default function GamePage() {
           game={game}
           gameId={gameId}
           onUpdate={loadGameData}
+          teamHome={selectedTeamHome}
+          teamAway={selectedTeamAway}
         />
 
         {/* 라인업 섹션 */}
@@ -233,6 +245,7 @@ export default function GamePage() {
           onUpdate={loadGameData}
           onLineupUpdate={updateLineups}
           roomName={game.room}
+          onTeamChange={handleTeamChange}
         />
 
         {/* 쿼터 섹션 */}

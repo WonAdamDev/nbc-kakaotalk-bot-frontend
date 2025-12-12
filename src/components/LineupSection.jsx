@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import RoomMemberModal from './RoomMemberModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate, roomName }) {
+export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate, roomName, onTeamChange }) {
   const [selectedTeam, setSelectedTeam] = useState('블루')
   const [memberName, setMemberName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -12,12 +12,47 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   const [dragOverPlayer, setDragOverPlayer] = useState(null)
   const [showMemberModal, setShowMemberModal] = useState(false)
 
+  // 팀 선택 드롭다운
+  const [availableTeams, setAvailableTeams] = useState([])
+  const [selectedTeamHome, setSelectedTeamHome] = useState('')
+  const [selectedTeamAway, setSelectedTeamAway] = useState('')
+
+  // 팀 목록 로드
+  const loadTeams = async () => {
+    if (!roomName) return
+
+    try {
+      const response = await axios.get(`${API_URL}/api/commands/team/list`, {
+        params: { room: roomName }
+      })
+      if (response.data.success) {
+        setAvailableTeams(response.data.data.teams || [])
+      }
+    } catch (err) {
+      console.error('Failed to load teams:', err)
+    }
+  }
+
+  // 컴포넌트 마운트 시 팀 목록 로드
+  useEffect(() => {
+    loadTeams()
+  }, [roomName])
+
+  // 팀 선택 변경 시 상위로 전달
+  useEffect(() => {
+    if (onTeamChange) {
+      onTeamChange(selectedTeamHome, selectedTeamAway)
+    }
+  }, [selectedTeamHome, selectedTeamAway])
+
   // 진행중인 쿼터가 있는지 확인
   const hasOngoingQuarter = quarters?.some(q => q.status === '진행중') || false
   // 경기가 종료되지 않았고, 진행중인 쿼터가 없으면 순번 변경 가능
   const canSwapLineup = gameStatus !== '종료' && !hasOngoingQuarter
   // 경기가 종료되지 않았고, 진행중인 쿼터가 없으면 조퇴 가능
   const canRemovePlayer = gameStatus !== '종료' && !hasOngoingQuarter
+  // 팀 선택 가능 여부 (경기 시작 전에만)
+  const canSelectTeam = gameStatus === '준비중'
 
   const handleArrival = async (e) => {
     e.preventDefault()
@@ -148,6 +183,57 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
       <div className="card mb-6">
         <h2 className="text-xl font-bold mb-4">선수 도착 관리</h2>
 
+        {/* 팀 선택 (경기 시작 전에만) */}
+        {availableTeams.length > 0 && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 className="font-semibold mb-3">경기 팀 선택</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">HOME (블루)</label>
+                <select
+                  value={selectedTeamHome}
+                  onChange={(e) => setSelectedTeamHome(e.target.value)}
+                  disabled={!canSelectTeam}
+                  className="input w-full"
+                >
+                  <option value="">팀 선택 안함</option>
+                  {availableTeams.map((team) => (
+                    <option key={team.name} value={team.name}>
+                      {team.name} ({team.member_count}명)
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">AWAY (화이트)</label>
+                <select
+                  value={selectedTeamAway}
+                  onChange={(e) => setSelectedTeamAway(e.target.value)}
+                  disabled={!canSelectTeam}
+                  className="input w-full"
+                >
+                  <option value="">팀 선택 안함</option>
+                  {availableTeams.map((team) => (
+                    <option key={team.name} value={team.name}>
+                      {team.name} ({team.member_count}명)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {/* 유효성 검사 메시지 */}
+            {selectedTeamHome && selectedTeamAway && selectedTeamHome === selectedTeamAway && (
+              <p className="text-red-600 text-sm mt-2">⚠️ HOME과 AWAY는 서로 다른 팀이어야 합니다.</p>
+            )}
+            {(selectedTeamHome && !selectedTeamAway) || (!selectedTeamHome && selectedTeamAway) && (
+              <p className="text-yellow-600 text-sm mt-2">⚠️ 두 팀 모두 선택하거나 둘 다 선택하지 않아야 합니다.</p>
+            )}
+            {!canSelectTeam && (selectedTeamHome || selectedTeamAway) && (
+              <p className="text-gray-600 text-sm mt-2">ℹ️ 경기 시작 후에는 팀을 변경할 수 없습니다.</p>
+            )}
+          </div>
+        )}
+
         {/* 도착 처리 폼 */}
         <form onSubmit={handleArrival} className="mb-6">
           <div className="flex flex-wrap gap-3">
@@ -188,11 +274,11 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
       {/* 팀별 라인업 */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* 블루팀 */}
+        {/* HOME (블루) */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <h3 className="text-lg font-semibold">블루팀</h3>
+            <h3 className="text-lg font-semibold">HOME (블루)</h3>
             <span className="badge badge-blue">{lineups.블루?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">
@@ -257,11 +343,11 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
           </div>
         </div>
 
-        {/* 화이트팀 */}
+        {/* AWAY (화이트) */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-gray-400 rounded border border-gray-600"></div>
-            <h3 className="text-lg font-semibold">화이트팀</h3>
+            <h3 className="text-lg font-semibold">AWAY (화이트)</h3>
             <span className="badge badge-white">{lineups.화이트?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">
