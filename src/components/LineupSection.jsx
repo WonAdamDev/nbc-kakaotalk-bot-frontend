@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import RoomMemberModal from './RoomMemberModal'
+import EarlyLeaveModal from './EarlyLeaveModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -11,6 +12,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   const [draggedPlayer, setDraggedPlayer] = useState(null)
   const [dragOverPlayer, setDragOverPlayer] = useState(null)
   const [showMemberModal, setShowMemberModal] = useState(false)
+  const [showEarlyLeaveModal, setShowEarlyLeaveModal] = useState(false)
 
   // 팀 선택 드롭다운
   const [availableTeams, setAvailableTeams] = useState([])
@@ -180,6 +182,15 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         onSelectMember={handleSelectMember}
       />
 
+      {/* 조퇴 선수 선택 모달 */}
+      <EarlyLeaveModal
+        isOpen={showEarlyLeaveModal}
+        onClose={() => setShowEarlyLeaveModal(false)}
+        lineups={lineups}
+        gameStatus={gameStatus}
+        onSelectPlayer={handleRemove}
+      />
+
       <div className="card mb-6">
         <h2 className="text-xl font-bold mb-4">선수 도착 관리</h2>
 
@@ -269,6 +280,16 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
             >
               ✅ 도착 처리
             </button>
+
+            <button
+              type="button"
+              onClick={() => setShowEarlyLeaveModal(true)}
+              disabled={!canRemovePlayer}
+              className="btn btn-danger"
+              title={hasOngoingQuarter ? '쿼터 진행 중에는 조퇴 처리할 수 없습니다' : '조퇴할 선수를 선택하세요'}
+            >
+              👋 조퇴
+            </button>
           </div>
         </form>
 
@@ -345,19 +366,6 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         </p>
                       </div>
                     </div>
-
-                    {canRemovePlayer && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleRemove(lineup.id, lineup.member)
-                        }}
-                        className="text-red-600 hover:text-red-800 text-sm px-2"
-                        title={gameStatus === '준비중' ? '제거' : '조퇴 처리'}
-                      >
-                        {gameStatus === '준비중' ? '❌' : '👋'}
-                      </button>
-                    )}
                   </div>
                 )
               })
@@ -436,19 +444,6 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         </p>
                       </div>
                     </div>
-
-                    {canRemovePlayer && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleRemove(lineup.id, lineup.member)
-                        }}
-                        className="text-red-600 hover:text-red-800 text-sm px-2"
-                        title={gameStatus === '준비중' ? '제거' : '조퇴 처리'}
-                      >
-                        {gameStatus === '준비중' ? '❌' : '👋'}
-                      </button>
-                    )}
                   </div>
                 )
               })
