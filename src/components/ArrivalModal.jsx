@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
@@ -56,6 +56,34 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
     setMemberName(name)
   }
 
+  // 팀별로 그룹화된 멤버 목록
+  const groupedMembers = useMemo(() => {
+    const groups = {}
+    const noTeam = []
+
+    members.forEach((member) => {
+      if (member.team) {
+        if (!groups[member.team]) {
+          groups[member.team] = []
+        }
+        groups[member.team].push(member)
+      } else {
+        noTeam.push(member)
+      }
+    })
+
+    // 각 팀 내에서 이름순 정렬
+    Object.keys(groups).forEach((team) => {
+      groups[team].sort((a, b) => a.name.localeCompare(b.name))
+    })
+    noTeam.sort((a, b) => a.name.localeCompare(b.name))
+
+    // 팀 이름 정렬
+    const sortedTeams = Object.keys(groups).sort()
+
+    return { teams: sortedTeams, groups, noTeam }
+  }, [members])
+
   if (!isOpen) return null
 
   return (
@@ -110,7 +138,7 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
           </div>
         </form>
 
-        {/* 프리셋 멤버 리스트 */}
+        {/* 프리셋 멤버 리스트 (팀별 칼럼) */}
         <div>
           <h3 className="font-semibold mb-3 text-gray-700">프리셋 멤버</h3>
 
@@ -123,25 +151,70 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
               등록된 멤버가 없습니다.
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
-              {members.map((member) => (
-                <button
-                  key={member.name}
-                  onClick={() => handleSelectMember(member.name)}
-                  className={`
-                    p-3 rounded-lg border transition-all text-left
-                    ${memberName === member.name
-                      ? 'bg-blue-100 border-blue-500 font-semibold'
-                      : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
-                    }
-                  `}
-                >
-                  <div className="font-medium">{member.name}</div>
-                  {member.team && (
-                    <div className="text-xs text-gray-500 mt-1">팀: {member.team}</div>
-                  )}
-                </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
+              {/* 팀별 멤버 칼럼 */}
+              {groupedMembers.teams.map((teamName) => (
+                <div key={teamName} className="bg-blue-50 rounded-lg border border-blue-200 p-3 flex flex-col">
+                  {/* 팀 헤더 */}
+                  <div className="flex items-center gap-2 mb-2 pb-2 border-b border-blue-300">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <h4 className="font-bold text-gray-800 text-sm">{teamName}</h4>
+                    <span className="text-xs text-gray-600 bg-blue-200 px-1.5 py-0.5 rounded-full ml-auto">
+                      {groupedMembers.groups[teamName].length}
+                    </span>
+                  </div>
+                  {/* 팀 멤버 목록 */}
+                  <div className="space-y-1">
+                    {groupedMembers.groups[teamName].map((member) => (
+                      <button
+                        key={member.name}
+                        onClick={() => handleSelectMember(member.name)}
+                        className={`
+                          w-full p-2 rounded transition-all text-left text-sm
+                          ${memberName === member.name
+                            ? 'bg-blue-500 text-white font-semibold'
+                            : 'bg-white text-gray-900 hover:bg-blue-100 border border-blue-100 hover:border-blue-300'
+                          }
+                        `}
+                      >
+                        {member.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
+
+              {/* 팀 미배정 멤버 칼럼 */}
+              {groupedMembers.noTeam.length > 0 && (
+                <div className="bg-gray-50 rounded-lg border border-gray-300 p-3 flex flex-col">
+                  {/* 미배정 헤더 */}
+                  <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-300">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <h4 className="font-bold text-gray-800 text-sm">팀 미배정</h4>
+                    <span className="text-xs text-gray-600 bg-gray-200 px-1.5 py-0.5 rounded-full ml-auto">
+                      {groupedMembers.noTeam.length}
+                    </span>
+                  </div>
+                  {/* 미배정 멤버 목록 */}
+                  <div className="space-y-1">
+                    {groupedMembers.noTeam.map((member) => (
+                      <button
+                        key={member.name}
+                        onClick={() => handleSelectMember(member.name)}
+                        className={`
+                          w-full p-2 rounded transition-all text-left text-sm
+                          ${memberName === member.name
+                            ? 'bg-gray-600 text-white font-semibold'
+                            : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-200 hover:border-gray-400'
+                          }
+                        `}
+                      >
+                        {member.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
