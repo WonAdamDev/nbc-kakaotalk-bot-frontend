@@ -55,6 +55,26 @@ export default function GameHeader({ game }) {
           </div>
         )}
       </div>
+
+      {/* 팀 정보 표시 */}
+      {(game.team_home || game.team_away) && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-gray-500 mb-1">홈팀 (블루)</p>
+              <p className="font-bold text-blue-700 text-lg">
+                {game.team_home || '팀 미지정'}
+              </p>
+            </div>
+            <div className="bg-gray-50 border border-gray-300 rounded-lg p-3">
+              <p className="text-xs text-gray-500 mb-1">어웨이팀 (화이트)</p>
+              <p className="font-bold text-gray-700 text-lg">
+                {game.team_away || '팀 미지정'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
