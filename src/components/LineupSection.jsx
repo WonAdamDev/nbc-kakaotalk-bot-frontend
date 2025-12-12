@@ -87,6 +87,25 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
     }
   }
 
+  // 출전/벤치 상태 토글
+  const handleTogglePlayingStatus = async (lineupId, currentStatus, memberName) => {
+    if (hasOngoingQuarter) {
+      alert('쿼터 진행 중에는 출전/벤치 상태를 변경할 수 없습니다.')
+      return
+    }
+
+    try {
+      setLoading(true)
+      await axios.put(`${API_URL}/api/game/${gameId}/lineup/${lineupId}/toggle-status`)
+      // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
+    } catch (err) {
+      alert('상태 변경 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // 드래그 시작
   const handleDragStart = (e, team, number, member) => {
     setDraggedPlayer({ team, number, member })
@@ -182,7 +201,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
       />
 
       <div className="card mb-6">
-        <h2 className="text-xl font-bold mb-4">선수 도착 관리</h2>
+        <h2 className="text-xl font-bold mb-4">선수 관리</h2>
 
         {/* 팀 선택 (경기 시작 전에만) */}
         {availableTeams.length > 0 && (
@@ -329,6 +348,25 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
                           </p>
                         </div>
+                        {/* 출전/벤치 토글 */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleTogglePlayingStatus(lineup.id, lineup.playing_status, lineup.member)
+                          }}
+                          disabled={hasOngoingQuarter || loading}
+                          className={`
+                            px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                            ${lineup.playing_status === 'playing'
+                              ? 'bg-green-500 text-white hover:bg-green-600'
+                              : 'bg-gray-400 text-white hover:bg-gray-500'
+                            }
+                            ${hasOngoingQuarter ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                          `}
+                          title={hasOngoingQuarter ? '쿼터 진행 중에는 변경 불가' : '클릭하여 출전/벤치 전환'}
+                        >
+                          {lineup.playing_status === 'playing' ? '⚽ 출전' : '💺 벤치'}
+                        </button>
                       </div>
                     </div>
                   )
@@ -437,6 +475,25 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
                           </p>
                         </div>
+                        {/* 출전/벤치 토글 */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleTogglePlayingStatus(lineup.id, lineup.playing_status, lineup.member)
+                          }}
+                          disabled={hasOngoingQuarter || loading}
+                          className={`
+                            px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                            ${lineup.playing_status === 'playing'
+                              ? 'bg-green-500 text-white hover:bg-green-600'
+                              : 'bg-gray-400 text-white hover:bg-gray-500'
+                            }
+                            ${hasOngoingQuarter ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                          `}
+                          title={hasOngoingQuarter ? '쿼터 진행 중에는 변경 불가' : '클릭하여 출전/벤치 전환'}
+                        >
+                          {lineup.playing_status === 'playing' ? '⚽ 출전' : '💺 벤치'}
+                        </button>
                       </div>
                     </div>
                   )
