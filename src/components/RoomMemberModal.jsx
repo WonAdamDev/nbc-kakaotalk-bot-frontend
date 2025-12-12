@@ -5,7 +5,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMember }) {
   const [members, setMembers] = useState([])
-  const [newMemberName, setNewMemberName] = useState('')
   const [loading, setLoading] = useState(false)
 
   // 멤버 목록 로드
@@ -33,30 +32,6 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
       loadMembers()
     }
   }, [isOpen, roomName])
-
-  // 멤버 추가
-  const handleAddMember = async (e) => {
-    e.preventDefault()
-    if (!newMemberName.trim() || !roomName) return
-
-    try {
-      setLoading(true)
-      const response = await axios.post(`${API_URL}/api/commands/member`, {
-        room: roomName,
-        member: newMemberName.trim()
-      })
-
-      if (response.data.success) {
-        // 목록 새로고침
-        await loadMembers()
-        setNewMemberName('')
-      }
-    } catch (err) {
-      alert('멤버 추가 실패: ' + (err.response?.data?.message || err.message))
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // 멤버 선택
   const handleSelectMember = (memberName) => {
@@ -98,9 +73,9 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[85vh] flex flex-col">
         {/* 헤더 */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between rounded-t-lg">
           <h2 className="text-xl font-bold">
             방 멤버 프리셋 {roomName && `(${roomName})`}
           </h2>
@@ -113,33 +88,13 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
         </div>
 
         {/* 본문 */}
-        <div className="p-4">
+        <div className="flex-1 overflow-y-auto p-4">
           <p className="text-sm text-gray-600 mb-4">
-            자주 사용하는 멤버를 추가하고 선수 도착 처리 시 빠르게 선택하세요.
+            등록된 멤버를 선택하여 선수 도착 처리를 빠르게 하세요.
           </p>
 
-          {/* 멤버 추가 폼 */}
-          <form onSubmit={handleAddMember} className="mb-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newMemberName}
-                onChange={(e) => setNewMemberName(e.target.value)}
-                placeholder="멤버 이름"
-                className="input flex-1"
-              />
-              <button
-                type="submit"
-                disabled={loading || !newMemberName.trim()}
-                className="btn btn-primary"
-              >
-                추가
-              </button>
-            </div>
-          </form>
-
-          {/* 멤버 목록 (팀별 그룹화) */}
-          <div className="space-y-4">
+          {/* 멤버 목록 (팀별 칼럼 그리드) */}
+          <div>
             {loading ? (
               <p className="text-center text-gray-500 py-4">로딩 중...</p>
             ) : members.length === 0 ? (
@@ -147,25 +102,25 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
                 등록된 멤버가 없습니다. 멤버를 추가해보세요.
               </p>
             ) : (
-              <>
-                {/* 팀별 멤버 표시 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {/* 팀별 멤버 칼럼 */}
                 {groupedMembers.teams.map((teamName) => (
-                  <div key={teamName}>
+                  <div key={teamName} className="bg-blue-50 rounded-lg border border-blue-200 p-3 flex flex-col min-h-[200px]">
                     {/* 팀 헤더 */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <h3 className="font-semibold text-gray-700">{teamName}</h3>
-                      <span className="text-xs text-gray-500">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-blue-300">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
+                      <h3 className="font-bold text-gray-800 text-sm">{teamName}</h3>
+                      <span className="text-xs text-gray-600 bg-blue-200 px-2 py-0.5 rounded-full ml-auto">
                         {groupedMembers.groups[teamName].length}명
                       </span>
                     </div>
                     {/* 팀 멤버 목록 */}
-                    <div className="space-y-1 ml-5 mb-3">
+                    <div className="space-y-1.5 flex-1 overflow-y-auto">
                       {groupedMembers.groups[teamName].map((member) => (
                         <button
                           key={member.name}
                           onClick={() => handleSelectMember(member.name)}
-                          className="w-full p-2.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors text-left text-gray-900 hover:text-blue-600 border border-blue-200"
+                          className="w-full p-2 bg-white rounded hover:bg-blue-100 transition-colors text-left text-sm text-gray-900 hover:text-blue-600 border border-blue-100 hover:border-blue-300"
                         >
                           {member.name}
                         </button>
@@ -174,24 +129,24 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
                   </div>
                 ))}
 
-                {/* 팀 미배정 멤버 */}
+                {/* 팀 미배정 멤버 칼럼 */}
                 {groupedMembers.noTeam.length > 0 && (
-                  <div>
+                  <div className="bg-gray-50 rounded-lg border border-gray-300 p-3 flex flex-col min-h-[200px]">
                     {/* 미배정 헤더 */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                      <h3 className="font-semibold text-gray-700">팀 미배정</h3>
-                      <span className="text-xs text-gray-500">
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-300">
+                      <div className="w-3 h-3 bg-gray-400 rounded-full flex-shrink-0"></div>
+                      <h3 className="font-bold text-gray-800 text-sm">팀 미배정</h3>
+                      <span className="text-xs text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full ml-auto">
                         {groupedMembers.noTeam.length}명
                       </span>
                     </div>
                     {/* 미배정 멤버 목록 */}
-                    <div className="space-y-1 ml-5">
+                    <div className="space-y-1.5 flex-1 overflow-y-auto">
                       {groupedMembers.noTeam.map((member) => (
                         <button
                           key={member.name}
                           onClick={() => handleSelectMember(member.name)}
-                          className="w-full p-2.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left text-gray-900 hover:text-gray-600 border border-gray-200"
+                          className="w-full p-2 bg-white rounded hover:bg-gray-100 transition-colors text-left text-sm text-gray-900 hover:text-gray-600 border border-gray-200 hover:border-gray-400"
                         >
                           {member.name}
                         </button>
@@ -199,7 +154,7 @@ export default function RoomMemberModal({ isOpen, onClose, roomName, onSelectMem
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
