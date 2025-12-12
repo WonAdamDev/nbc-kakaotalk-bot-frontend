@@ -289,7 +289,29 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
           <div className="space-y-2">
             {lineups.블루?.length === 0 ? (
-              <p className="text-gray-500 text-sm">도착한 선수가 없습니다.</p>
+              <div
+                onDragOver={(e) => {
+                  if (!canSwapLineup) return
+                  // 빈 팀에 드롭할 때는 다음 번호 (현재 선수 수 + 1)
+                  const nextNumber = (lineups.블루?.length || 0) + 1
+                  handleDragOver(e, '블루', nextNumber)
+                }}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => {
+                  if (!canSwapLineup) return
+                  const nextNumber = (lineups.블루?.length || 0) + 1
+                  handleDrop(e, '블루', nextNumber)
+                }}
+                className={`
+                  p-8 rounded-lg border-2 border-dashed transition-all
+                  ${dragOverPlayer?.team === '블루' ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-gray-50'}
+                  ${canSwapLineup && draggedPlayer ? 'hover:border-blue-400' : ''}
+                `}
+              >
+                <p className="text-gray-500 text-sm text-center">
+                  {canSwapLineup && draggedPlayer ? '여기에 드롭하여 팀 이동' : '도착한 선수가 없습니다.'}
+                </p>
+              </div>
             ) : (
               lineups.블루?.map((lineup, idx) => {
                 const isDragging = draggedPlayer?.team === '블루' && draggedPlayer?.number === lineup.number
@@ -358,7 +380,29 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
           <div className="space-y-2">
             {lineups.화이트?.length === 0 ? (
-              <p className="text-gray-500 text-sm">도착한 선수가 없습니다.</p>
+              <div
+                onDragOver={(e) => {
+                  if (!canSwapLineup) return
+                  // 빈 팀에 드롭할 때는 다음 번호 (현재 선수 수 + 1)
+                  const nextNumber = (lineups.화이트?.length || 0) + 1
+                  handleDragOver(e, '화이트', nextNumber)
+                }}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => {
+                  if (!canSwapLineup) return
+                  const nextNumber = (lineups.화이트?.length || 0) + 1
+                  handleDrop(e, '화이트', nextNumber)
+                }}
+                className={`
+                  p-8 rounded-lg border-2 border-dashed transition-all
+                  ${dragOverPlayer?.team === '화이트' ? 'border-gray-700 bg-gray-200' : 'border-gray-300 bg-gray-50'}
+                  ${canSwapLineup && draggedPlayer ? 'hover:border-gray-600' : ''}
+                `}
+              >
+                <p className="text-gray-500 text-sm text-center">
+                  {canSwapLineup && draggedPlayer ? '여기에 드롭하여 팀 이동' : '도착한 선수가 없습니다.'}
+                </p>
+              </div>
             ) : (
               lineups.화이트?.map((lineup, idx) => {
                 const isDragging = draggedPlayer?.team === '화이트' && draggedPlayer?.number === lineup.number
