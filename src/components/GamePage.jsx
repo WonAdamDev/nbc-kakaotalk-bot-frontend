@@ -107,6 +107,18 @@ export default function GamePage() {
         }
         break
 
+      case 'lineup_updated':
+        // 라인업 업데이트 (출전/벤치 토글 등) - 해당 팀만 업데이트
+        if (data.lineups) {
+          setLineups(prev => ({
+            ...prev,
+            [data.team]: data.lineups
+          }))
+        } else {
+          loadGameData()
+        }
+        break
+
       case 'quarter_started':
         // 쿼터 시작 - 쿼터 추가 및 게임 상태 업데이트
         setQuarters(prev => [...prev, data])
