@@ -89,7 +89,7 @@ export default function GameControls({ game, gameId, onUpdate }) {
       </div>
 
       <p className="text-sm text-gray-500 mt-3">
-        {game.status === '준비중' && '※ 경기를 시작하면 선수 도착 및 쿼터 관리가 가능합니다.'}
+        {game.status === '준비중' && '※ 선수 도착은 언제든 가능합니다. 경기를 시작하면 쿼터 관리가 가능합니다.'}
         {game.status === '진행중' && '※ 경기를 종료하면 최종 점수가 자동으로 계산됩니다.'}
         {game.status === '종료' && '※ 경기가 종료되었습니다.'}
       </p>
