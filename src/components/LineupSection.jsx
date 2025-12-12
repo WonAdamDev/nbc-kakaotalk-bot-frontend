@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import RoomMemberModal from './RoomMemberModal'
 import EarlyLeaveModal from './EarlyLeaveModal'
+import ArrivalModal from './ArrivalModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate, roomName, onTeamChange }) {
-  const [selectedTeam, setSelectedTeam] = useState('블루')
-  const [memberName, setMemberName] = useState('')
   const [loading, setLoading] = useState(false)
   const [draggedPlayer, setDraggedPlayer] = useState(null)
   const [dragOverPlayer, setDragOverPlayer] = useState(null)
-  const [showMemberModal, setShowMemberModal] = useState(false)
   const [showEarlyLeaveModal, setShowEarlyLeaveModal] = useState(false)
+  const [showArrivalModal, setShowArrivalModal] = useState(false)
 
   // 팀 선택 드롭다운
   const [availableTeams, setAvailableTeams] = useState([])
@@ -56,29 +54,21 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   // 팀 선택 가능 여부 (경기 시작 전에만)
   const canSelectTeam = gameStatus === '준비중'
 
-  const handleArrival = async (e) => {
-    e.preventDefault()
-    if (!memberName.trim()) return
-
+  const handleArrival = async (team, member) => {
     try {
       setLoading(true)
-      setMemberName('')
       await axios.post(`${API_URL}/api/game/${gameId}/lineup/arrival`, {
-        team: selectedTeam,
-        member: memberName.trim()
+        team: team,
+        member: member
       })
       // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
     } catch (err) {
       alert('도착 처리 실패: ' + (err.response?.data?.error || err.message))
       onUpdate() // 에러 발생 시에만 재로드
+      throw err // 모달에서 에러 처리를 위해 throw
     } finally {
       setLoading(false)
     }
-  }
-
-  // 프리셋에서 멤버 선택
-  const handleSelectMember = (name) => {
-    setMemberName(name)
   }
 
   const handleRemove = async (lineupId, memberName) => {
@@ -174,14 +164,6 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
   return (
     <>
-      {/* 멤버 프리셋 모달 */}
-      <RoomMemberModal
-        isOpen={showMemberModal}
-        onClose={() => setShowMemberModal(false)}
-        roomName={roomName}
-        onSelectMember={handleSelectMember}
-      />
-
       {/* 조퇴 선수 선택 모달 */}
       <EarlyLeaveModal
         isOpen={showEarlyLeaveModal}
@@ -189,6 +171,14 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         lineups={lineups}
         gameStatus={gameStatus}
         onSelectPlayer={handleRemove}
+      />
+
+      {/* 출석 처리 모달 */}
+      <ArrivalModal
+        isOpen={showArrivalModal}
+        onClose={() => setShowArrivalModal(false)}
+        onArrival={handleArrival}
+        roomName={roomName}
       />
 
       <div className="card mb-6">
@@ -245,53 +235,26 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
           </div>
         )}
 
-        {/* 도착 처리 폼 */}
-        <form onSubmit={handleArrival} className="mb-6">
-          <div className="flex flex-wrap gap-3">
-            <select
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-              className="input"
-            >
-              <option value="블루">HOME</option>
-              <option value="화이트">AWAY</option>
-            </select>
+        {/* 출석 / 조퇴 버튼 */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setShowArrivalModal(true)}
+            className="btn btn-primary"
+          >
+            ✅ 출석
+          </button>
 
-            <input
-              type="text"
-              value={memberName}
-              onChange={(e) => setMemberName(e.target.value)}
-              placeholder="선수 이름"
-              className="input flex-1 min-w-[200px]"
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowMemberModal(true)}
-              className="btn btn-secondary"
-            >
-              📋 프리셋
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading || !memberName.trim()}
-              className="btn btn-primary"
-            >
-              ✅ 도착 처리
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowEarlyLeaveModal(true)}
-              disabled={!canRemovePlayer}
-              className="btn btn-danger"
-              title={hasOngoingQuarter ? '쿼터 진행 중에는 조퇴 처리할 수 없습니다' : '조퇴할 선수를 선택하세요'}
-            >
-              👋 조퇴
-            </button>
-          </div>
-        </form>
+          <button
+            type="button"
+            onClick={() => setShowEarlyLeaveModal(true)}
+            disabled={!canRemovePlayer}
+            className="btn btn-danger"
+            title={hasOngoingQuarter ? '쿼터 진행 중에는 조퇴 처리할 수 없습니다' : '조퇴할 선수를 선택하세요'}
+          >
+            👋 조퇴
+          </button>
+        </div>
 
       {/* 팀별 라인업 */}
       <div className="grid md:grid-cols-2 gap-6">
