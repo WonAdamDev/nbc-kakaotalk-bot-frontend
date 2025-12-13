@@ -19,6 +19,23 @@ export default function GameControls({ game, gameId, onUpdate, teamHome, teamAwa
     return true
   }
 
+  // 경기 시작 불가능한 이유 반환
+  const getStartGameDisabledReason = () => {
+    if (!teamHome && !teamAway) {
+      return 'HOME과 AWAY 팀을 선택해주세요.'
+    }
+    if (!teamHome) {
+      return 'HOME 팀을 선택해주세요.'
+    }
+    if (!teamAway) {
+      return 'AWAY 팀을 선택해주세요.'
+    }
+    if (teamHome === teamAway) {
+      return 'HOME과 AWAY는 서로 다른 팀이어야 합니다.'
+    }
+    return null
+  }
+
   const handleStartGame = async () => {
     // 팀 선택 검증
     if (!teamHome || !teamAway) {
@@ -120,11 +137,32 @@ export default function GameControls({ game, gameId, onUpdate, teamHome, teamAwa
         )}
       </div>
 
-      <p className="text-sm text-gray-500 mt-3">
-        {game.status === '준비중' && '※ 선수 도착 관리에서 팀을 선택한 후 경기를 시작하세요.'}
-        {game.status === '진행중' && '※ 경기를 종료하면 최종 점수가 자동으로 계산됩니다.'}
-        {game.status === '종료' && '※ 경기가 종료되었습니다.'}
-      </p>
+      {game.status === '준비중' && (
+        <div className="mt-3">
+          {!canStartGame() && (
+            <p className="text-sm text-red-600 font-medium">
+              ⚠️ {getStartGameDisabledReason()}
+            </p>
+          )}
+          {canStartGame() && (
+            <p className="text-sm text-gray-500">
+              ✅ 경기를 시작할 수 있습니다.
+            </p>
+          )}
+        </div>
+      )}
+
+      {game.status === '진행중' && (
+        <p className="text-sm text-gray-500 mt-3">
+          ※ 경기를 종료하면 최종 점수가 자동으로 계산됩니다.
+        </p>
+      )}
+
+      {game.status === '종료' && (
+        <p className="text-sm text-gray-500 mt-3">
+          ※ 경기가 종료되었습니다.
+        </p>
+      )}
     </div>
   )
 }
