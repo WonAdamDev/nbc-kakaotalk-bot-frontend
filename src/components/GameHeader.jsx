@@ -1,4 +1,4 @@
-import { formatTimeKST } from '../utils/timeUtils'
+import { formatDateTimeKST } from '../utils/timeUtils'
 
 export default function GameHeader({ game }) {
   const getStatusBadge = (status) => {
@@ -44,15 +44,15 @@ export default function GameHeader({ game }) {
         </div>
         <div>
           <p className="text-gray-500">생성 시각</p>
-          <p className="font-semibold">
-            {formatTimeKST(game.created_at)}
+          <p className="font-semibold text-xs">
+            {formatDateTimeKST(game.created_at)}
           </p>
         </div>
         {game.started_at && (
           <div>
             <p className="text-gray-500">시작 시각</p>
-            <p className="font-semibold">
-              {formatTimeKST(game.started_at)}
+            <p className="font-semibold text-xs">
+              {formatDateTimeKST(game.started_at)}
             </p>
           </div>
         )}

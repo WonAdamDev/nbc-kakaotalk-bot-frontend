@@ -36,13 +36,23 @@ export const formatTimeKST = (dateString) => {
  * 날짜와 시간 표시 (YYYY. MM. DD. HH:MM 형식, 한국 시간대)
  */
 export const formatDateTimeKST = (dateString) => {
-  return formatKST(dateString, {
+  if (!dateString) return '-'
+
+  const date = new Date(dateString)
+
+  // 한국 시간대로 변환
+  const kstString = date.toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    hour12: false
   })
+
+  // "YYYY. MM. DD. HH:MM" 형식으로 변환 (초 제거)
+  return kstString.replace(/:\d{2}$/, '')
 }
 
 /**
