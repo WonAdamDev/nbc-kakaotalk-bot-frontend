@@ -133,6 +133,13 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
     setSwapModePlayer(null)
   }
 
+  // 모달이 열릴 때 자동으로 순번 교체 모드 해제
+  useEffect(() => {
+    if (showArrivalModal || showEarlyLeaveModal) {
+      setSwapModePlayer(null)
+    }
+  }, [showArrivalModal, showEarlyLeaveModal])
+
   // 순번 교체 실행
   const handleSwapWithPlayer = async (targetTeam, targetNumber) => {
     if (!swapModePlayer) return
