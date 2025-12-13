@@ -144,7 +144,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
     try {
       setLoading(true)
-      await axios.post(`${API_URL}/api/game/${gameId}/lineup/swap`, {
+      await axios.put(`${API_URL}/api/game/${gameId}/lineup/swap`, {
         team1: swapModePlayer.team,
         number1: swapModePlayer.number,
         team2: targetTeam,
@@ -530,7 +530,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   </div>
                 )}
                 {/* 순번 교체 모드에서 빈칸 클릭존 */}
-                {canSwapLineup && swapModePlayer && swapModePlayer.team === '블루' && (
+                {canSwapLineup && swapModePlayer && (
                   <div
                     onClick={() => {
                       const nextNumber = lineups.블루?.length > 0
@@ -739,7 +739,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   </div>
                 )}
                 {/* 순번 교체 모드에서 빈칸 클릭존 */}
-                {canSwapLineup && swapModePlayer && swapModePlayer.team === '화이트' && (
+                {canSwapLineup && swapModePlayer && (
                   <div
                     onClick={() => {
                       const nextNumber = lineups.화이트?.length > 0
