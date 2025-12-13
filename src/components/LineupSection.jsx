@@ -246,6 +246,14 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
   return (
     <>
+      {/* 순번 교체 모드 오버레이 - 모달보다 먼저 렌더링 */}
+      {swapModePlayer && !showArrivalModal && !showEarlyLeaveModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-30 z-40"
+          onClick={handleCancelSwapMode}
+        />
+      )}
+
       {/* 조퇴 선수 선택 모달 */}
       <EarlyLeaveModal
         isOpen={showEarlyLeaveModal}
@@ -263,14 +271,6 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         roomName={roomName}
         lineups={lineups}
       />
-
-      {/* 순번 교체 모드 오버레이 */}
-      {swapModePlayer && !showArrivalModal && !showEarlyLeaveModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-40"
-          onClick={handleCancelSwapMode}
-        />
-      )}
 
       <div className="card mb-6 relative">
         <h2 className="text-xl font-bold mb-4">선수 관리</h2>
