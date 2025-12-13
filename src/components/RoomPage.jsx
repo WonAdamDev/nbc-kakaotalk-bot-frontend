@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
+import { formatDateKST } from '../utils/timeUtils'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -106,7 +107,7 @@ export default function RoomPage() {
                     {game.status}
                   </span>
                   <span className="text-sm text-gray-500">
-                    {new Date(game.date).toLocaleDateString('ko-KR')}
+                    {game.date}
                   </span>
                 </div>
 

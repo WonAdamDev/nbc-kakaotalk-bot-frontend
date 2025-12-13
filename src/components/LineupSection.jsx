@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import EarlyLeaveModal from './EarlyLeaveModal'
 import ArrivalModal from './ArrivalModal'
+import { formatTimeKST } from '../utils/timeUtils'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -369,7 +370,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             )}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
+                            {formatTimeKST(lineup.arrived_at)}
                           </p>
                         </div>
                         {/* 출전/벤치 토글 */}
@@ -506,7 +507,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             )}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
+                            {formatTimeKST(lineup.arrived_at)}
                           </p>
                         </div>
                         {/* 출전/벤치 토글 */}

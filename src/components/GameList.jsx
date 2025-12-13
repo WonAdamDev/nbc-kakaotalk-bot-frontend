@@ -92,6 +92,7 @@ export default function GameList() {
     if (!dateString) return '-'
     const date = new Date(dateString)
     return date.toLocaleDateString('ko-KR', {
+      timeZone: 'Asia/Seoul',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -103,6 +104,7 @@ export default function GameList() {
     if (!dateString) return '-'
     const date = new Date(dateString)
     return date.toLocaleTimeString('ko-KR', {
+      timeZone: 'Asia/Seoul',
       hour: '2-digit',
       minute: '2-digit'
     })

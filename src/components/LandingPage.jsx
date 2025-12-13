@@ -73,7 +73,7 @@ export default function LandingPage() {
         {/* 푸터 */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-xs text-gray-400">
-            © 2024 농구 동호회 경기 관리 시스템
+            © {new Date().getFullYear()} 농구 동호회 경기 관리 시스템
           </p>
         </div>
       </div>

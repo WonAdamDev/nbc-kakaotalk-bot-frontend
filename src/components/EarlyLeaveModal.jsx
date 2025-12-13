@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatTimeKST } from '../utils/timeUtils'
 
 export default function EarlyLeaveModal({ isOpen, onClose, lineups, onSelectPlayer, gameStatus }) {
   const [selectedTeam, setSelectedTeam] = useState('블루')
@@ -71,7 +72,7 @@ export default function EarlyLeaveModal({ isOpen, onClose, lineups, onSelectPlay
                   <div>
                     <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
                     <p className="text-xs text-gray-500">
-                      도착: {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
+                      도착: {formatTimeKST(lineup.arrived_at)}
                     </p>
                   </div>
                 </div>
