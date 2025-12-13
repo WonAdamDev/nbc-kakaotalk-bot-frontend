@@ -211,6 +211,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         onClose={() => setShowArrivalModal(false)}
         onArrival={handleArrival}
         roomName={roomName}
+        lineups={lineups}
       />
 
       <div className="card mb-6">

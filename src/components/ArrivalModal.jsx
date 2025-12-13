@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
+export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lineups }) {
   const [mode, setMode] = useState('preset') // 'preset' 또는 'guest'
   const [selectedTeam, setSelectedTeam] = useState('블루')
   const [selectedMembers, setSelectedMembers] = useState([]) // [{name, member_id, team_id}]
@@ -77,6 +77,13 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
         team_id: member.team_id
       }])
     }
+  }
+
+  // 멤버가 이미 라인업에 있는지 확인
+  const isMemberInLineup = (memberId) => {
+    if (!lineups) return false
+    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    return allLineups.some(lineup => lineup.member_id === memberId)
   }
 
   const handleAddGuest = (e) => {
@@ -226,20 +233,31 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
                       <div className="space-y-1">
                         {groupedMembers.groups[teamName].map((member) => {
                           const isSelected = selectedMembers.some(m => m.member_id === member.member_id)
+                          const isInLineup = isMemberInLineup(member.member_id)
                           return (
                             <button
                               key={member.member_id || member.name}
-                              onClick={() => toggleMemberSelection(member)}
+                              onClick={() => !isInLineup && toggleMemberSelection(member)}
+                              disabled={isInLineup}
                               className={`
                                 w-full p-2 rounded transition-all text-left text-sm
-                                ${isSelected
-                                  ? 'bg-blue-500 text-white font-semibold'
-                                  : 'bg-white text-gray-900 hover:bg-blue-100 border border-blue-100 hover:border-blue-300'
+                                ${isInLineup
+                                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-60'
+                                  : isSelected
+                                    ? 'bg-blue-500 text-white font-semibold'
+                                    : 'bg-white text-gray-900 hover:bg-blue-100 border border-blue-100 hover:border-blue-300'
                                 }
                               `}
                             >
                               <div className="flex items-center justify-between">
-                                <span>{member.name}</span>
+                                <div className="flex items-center gap-2">
+                                  <span>{member.name}</span>
+                                  {isInLineup && (
+                                    <span className="text-xs bg-gray-400 text-white px-1.5 py-0.5 rounded">
+                                      이미 출석
+                                    </span>
+                                  )}
+                                </div>
                                 {member.member_id && (
                                   <span className="text-xs opacity-70">
                                     #{member.member_id.slice(-4)}
@@ -265,24 +283,35 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
                       <div className="space-y-1">
                         {groupedMembers.noTeam.map((member) => {
                           const isSelected = selectedMembers.some(m => m.member_id === member.member_id)
+                          const isInLineup = isMemberInLineup(member.member_id)
                           return (
                             <button
                               key={member.member_id || member.name}
-                              onClick={() => toggleMemberSelection({
+                              onClick={() => !isInLineup && toggleMemberSelection({
                                 name: member.name,
                                 member_id: member.member_id,
                                 team_id: null
                               })}
+                              disabled={isInLineup}
                               className={`
                                 w-full p-2 rounded transition-all text-left text-sm
-                                ${isSelected
-                                  ? 'bg-gray-600 text-white font-semibold'
-                                  : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-200 hover:border-gray-400'
+                                ${isInLineup
+                                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-60'
+                                  : isSelected
+                                    ? 'bg-gray-600 text-white font-semibold'
+                                    : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-200 hover:border-gray-400'
                                 }
                               `}
                             >
                               <div className="flex items-center justify-between">
-                                <span>{member.name}</span>
+                                <div className="flex items-center gap-2">
+                                  <span>{member.name}</span>
+                                  {isInLineup && (
+                                    <span className="text-xs bg-gray-400 text-white px-1.5 py-0.5 rounded">
+                                      이미 출석
+                                    </span>
+                                  )}
+                                </div>
                                 {member.member_id && (
                                   <span className="text-xs opacity-70">
                                     #{member.member_id.slice(-4)}
