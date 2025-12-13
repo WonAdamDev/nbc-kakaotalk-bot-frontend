@@ -267,7 +267,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
       {/* 순번 교체 모드 오버레이 - 모달이 열려있으면 표시 안 함 */}
       {swapModePlayer && !showArrivalModal && !showEarlyLeaveModal && (
         <div
-          className="fixed inset-0 bg-orange-500 bg-opacity-20 z-40"
+          className="fixed inset-0 bg-black bg-opacity-30 z-40"
           onClick={handleCancelSwapMode}
         />
       )}
@@ -354,7 +354,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         </div>
 
       {/* 팀별 라인업 */}
-      <div className="grid md:grid-cols-2 gap-6 relative z-50">
+      <div className="grid md:grid-cols-2 gap-6 relative z-[45]">
         {/* HOME */}
         <div>
           <div className="flex items-center gap-2 mb-3">
