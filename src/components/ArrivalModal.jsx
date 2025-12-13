@@ -6,8 +6,9 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
   const [mode, setMode] = useState('preset') // 'preset' 또는 'guest'
   const [selectedTeam, setSelectedTeam] = useState('블루')
-  const [selectedMember, setSelectedMember] = useState(null) // {name, member_id, team_id}
+  const [selectedMembers, setSelectedMembers] = useState([]) // [{name, member_id, team_id}]
   const [guestName, setGuestName] = useState('')
+  const [guestList, setGuestList] = useState([]) // 추가된 게스트 목록
   const [loading, setLoading] = useState(false)
   const [members, setMembers] = useState([])
   const [loadingMembers, setLoadingMembers] = useState(false)
@@ -23,8 +24,9 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
   useEffect(() => {
     if (isOpen) {
       setMode('preset')
-      setSelectedMember(null)
+      setSelectedMembers([])
       setGuestName('')
+      setGuestList([])
     }
   }, [isOpen])
 
@@ -47,13 +49,15 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
   }
 
   const handlePresetSubmit = async () => {
-    if (!selectedMember) return
+    if (selectedMembers.length === 0) return
 
     try {
       setLoading(true)
-      // member_id와 team_id 함께 전송
-      await onArrival(selectedTeam, selectedMember.name, selectedMember.member_id, selectedMember.team_id)
-      setSelectedMember(null)
+      // 선택된 모든 멤버 추가
+      for (const member of selectedMembers) {
+        await onArrival(selectedTeam, member.name, member.member_id, member.team_id)
+      }
+      setSelectedMembers([])
       onClose()
     } catch (err) {
       // 에러는 상위에서 처리
@@ -62,14 +66,49 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
     }
   }
 
+  const toggleMemberSelection = (member) => {
+    const isSelected = selectedMembers.some(m => m.member_id === member.member_id)
+    if (isSelected) {
+      setSelectedMembers(selectedMembers.filter(m => m.member_id !== member.member_id))
+    } else {
+      setSelectedMembers([...selectedMembers, {
+        name: member.name,
+        member_id: member.member_id,
+        team_id: member.team_id
+      }])
+    }
+  }
+
+  const handleAddGuest = (e) => {
+    e.preventDefault()
+    const trimmedName = guestName.trim()
+    if (!trimmedName) return
+
+    // 중복 체크
+    if (guestList.includes(trimmedName)) {
+      alert('이미 추가된 게스트입니다.')
+      return
+    }
+
+    setGuestList([...guestList, trimmedName])
+    setGuestName('')
+  }
+
+  const handleRemoveGuest = (name) => {
+    setGuestList(guestList.filter(g => g !== name))
+  }
+
   const handleGuestSubmit = async (e) => {
     e.preventDefault()
-    if (!guestName.trim()) return
+    if (guestList.length === 0) return
 
     try {
       setLoading(true)
-      // member_id 없이 이름만 전송 (게스트)
-      await onArrival(selectedTeam, guestName.trim())
+      // 모든 게스트 추가
+      for (const name of guestList) {
+        await onArrival(selectedTeam, name)
+      }
+      setGuestList([])
       setGuestName('')
       onClose()
     } catch (err) {
@@ -171,7 +210,7 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
             ) : (
               <>
                 <p className="text-sm text-gray-600 mb-3">
-                  ✨ 멤버를 선택하면 ID가 함께 저장되어 나중에 통계를 확인할 수 있습니다.
+                  ✨ 여러 멤버를 선택할 수 있습니다. 선택 후 출석 처리 버튼을 누르세요.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto mb-4">
@@ -185,32 +224,31 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
                         </span>
                       </div>
                       <div className="space-y-1">
-                        {groupedMembers.groups[teamName].map((member) => (
-                          <button
-                            key={member.member_id || member.name}
-                            onClick={() => setSelectedMember({
-                              name: member.name,
-                              member_id: member.member_id,
-                              team_id: member.team_id
-                            })}
-                            className={`
-                              w-full p-2 rounded transition-all text-left text-sm
-                              ${selectedMember?.member_id === member.member_id
-                                ? 'bg-blue-500 text-white font-semibold'
-                                : 'bg-white text-gray-900 hover:bg-blue-100 border border-blue-100 hover:border-blue-300'
-                              }
-                            `}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span>{member.name}</span>
-                              {member.member_id && (
-                                <span className="text-xs opacity-70">
-                                  #{member.member_id.slice(-4)}
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                        ))}
+                        {groupedMembers.groups[teamName].map((member) => {
+                          const isSelected = selectedMembers.some(m => m.member_id === member.member_id)
+                          return (
+                            <button
+                              key={member.member_id || member.name}
+                              onClick={() => toggleMemberSelection(member)}
+                              className={`
+                                w-full p-2 rounded transition-all text-left text-sm
+                                ${isSelected
+                                  ? 'bg-blue-500 text-white font-semibold'
+                                  : 'bg-white text-gray-900 hover:bg-blue-100 border border-blue-100 hover:border-blue-300'
+                                }
+                              `}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span>{member.name}</span>
+                                {member.member_id && (
+                                  <span className="text-xs opacity-70">
+                                    #{member.member_id.slice(-4)}
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                   ))}
@@ -225,32 +263,35 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
                         </span>
                       </div>
                       <div className="space-y-1">
-                        {groupedMembers.noTeam.map((member) => (
-                          <button
-                            key={member.member_id || member.name}
-                            onClick={() => setSelectedMember({
-                              name: member.name,
-                              member_id: member.member_id,
-                              team_id: null
-                            })}
-                            className={`
-                              w-full p-2 rounded transition-all text-left text-sm
-                              ${selectedMember?.member_id === member.member_id
-                                ? 'bg-gray-600 text-white font-semibold'
-                                : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-200 hover:border-gray-400'
-                              }
-                            `}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span>{member.name}</span>
-                              {member.member_id && (
-                                <span className="text-xs opacity-70">
-                                  #{member.member_id.slice(-4)}
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                        ))}
+                        {groupedMembers.noTeam.map((member) => {
+                          const isSelected = selectedMembers.some(m => m.member_id === member.member_id)
+                          return (
+                            <button
+                              key={member.member_id || member.name}
+                              onClick={() => toggleMemberSelection({
+                                name: member.name,
+                                member_id: member.member_id,
+                                team_id: null
+                              })}
+                              className={`
+                                w-full p-2 rounded transition-all text-left text-sm
+                                ${isSelected
+                                  ? 'bg-gray-600 text-white font-semibold'
+                                  : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-200 hover:border-gray-400'
+                                }
+                              `}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span>{member.name}</span>
+                                {member.member_id && (
+                                  <span className="text-xs opacity-70">
+                                    #{member.member_id.slice(-4)}
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -258,10 +299,10 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
 
                 <button
                   onClick={handlePresetSubmit}
-                  disabled={loading || !selectedMember}
+                  disabled={loading || selectedMembers.length === 0}
                   className="btn btn-primary w-full"
                 >
-                  ✅ 출석 처리 {selectedMember && `(${selectedMember.name})`}
+                  ✅ 출석 처리 {selectedMembers.length > 0 && `(${selectedMembers.length}명)`}
                 </button>
               </>
             )}
@@ -272,36 +313,67 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName }) {
         {mode === 'guest' && (
           <div>
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-orange-800 mb-2">
-                ⚠️ <strong>게스트로 추가</strong>
-              </p>
-              <p className="text-xs text-orange-700">
-                • 임시 ID가 발급되어 이번 경기에서만 사용됩니다<br />
-                • 통계에서 제외됩니다
+              <p className="text-sm text-orange-800">
+                ⚠️ <strong>게스트로 추가</strong> - 임시 ID가 발급되어 이번 경기에서만 사용됩니다
               </p>
             </div>
 
-            <form onSubmit={handleGuestSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">게스트 이름</label>
+            {/* 게스트 추가 입력 */}
+            <form onSubmit={handleAddGuest} className="mb-4">
+              <div className="flex gap-2">
                 <input
                   type="text"
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="게스트 이름을 입력하세요"
-                  className="input w-full"
+                  placeholder="게스트 이름 입력"
+                  className="input flex-1"
                   autoFocus
                 />
+                <button
+                  type="submit"
+                  disabled={!guestName.trim()}
+                  className="btn bg-blue-500 hover:bg-blue-600 text-white px-6"
+                >
+                  추가
+                </button>
               </div>
-
-              <button
-                type="submit"
-                disabled={loading || !guestName.trim()}
-                className="btn btn-danger w-full bg-orange-500 hover:bg-orange-600"
-              >
-                🎭 게스트로 추가
-              </button>
             </form>
+
+            {/* 추가된 게스트 목록 */}
+            {guestList.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">
+                  추가된 게스트 ({guestList.length}명)
+                </label>
+                <div className="border border-gray-300 rounded-lg p-3 max-h-[200px] overflow-y-auto">
+                  <div className="space-y-2">
+                    {guestList.map((name, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded p-2"
+                      >
+                        <span className="text-sm font-medium">{name}</span>
+                        <button
+                          onClick={() => handleRemoveGuest(name)}
+                          className="text-red-500 hover:text-red-700 text-xl"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 확정 버튼 */}
+            <button
+              onClick={handleGuestSubmit}
+              disabled={loading || guestList.length === 0}
+              className="btn btn-danger w-full bg-orange-500 hover:bg-orange-600"
+            >
+              🎭 게스트로 추가 {guestList.length > 0 && `(${guestList.length}명)`}
+            </button>
           </div>
         )}
       </div>
