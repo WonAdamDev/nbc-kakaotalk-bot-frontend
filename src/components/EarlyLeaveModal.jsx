@@ -59,12 +59,7 @@ export default function EarlyLeaveModal({ isOpen, onClose, lineups, onSelectPlay
                   transition-all hover:shadow-md
                   ${selectedTeam === '블루' ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' : 'bg-gray-50 border-gray-300 hover:bg-gray-100'}
                 `}
-                onClick={() => {
-                  const action = gameStatus === '준비중' ? '제거' : '조퇴 처리'
-                  if (confirm(`${lineup.member}님을 ${action}하시겠습니까?`)) {
-                    onSelectPlayer(lineup.id, lineup.member)
-                  }
-                }}
+                onClick={() => onSelectPlayer(lineup.id, lineup.member)}
               >
                 <div className="flex items-center gap-4">
                   <div className={`
