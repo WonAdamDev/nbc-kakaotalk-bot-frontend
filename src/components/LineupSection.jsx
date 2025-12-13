@@ -8,6 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function LineupSection({ gameId, lineups, gameStatus, quarters, onUpdate, onLineupUpdate, roomName, onTeamChange, game }) {
   const [loading, setLoading] = useState(false)
+  const [togglingLineups, setTogglingLineups] = useState(new Set()) // 토글 중인 선수 ID 추적
   const [draggedPlayer, setDraggedPlayer] = useState(null)
   const [dragOverPlayer, setDragOverPlayer] = useState(null)
   const [showEarlyLeaveModal, setShowEarlyLeaveModal] = useState(false)
@@ -111,14 +112,18 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
     }
 
     try {
-      setLoading(true)
+      setTogglingLineups(prev => new Set([...prev, lineupId]))
       await axios.put(`${API_URL}/api/game/${gameId}/lineup/${lineupId}/toggle-status`)
       // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
     } catch (err) {
       alert('상태 변경 실패: ' + (err.response?.data?.error || err.message))
       onUpdate() // 에러 발생 시에만 재로드
     } finally {
-      setLoading(false)
+      setTogglingLineups(prev => {
+        const next = new Set(prev)
+        next.delete(lineupId)
+        return next
+      })
     }
   }
 
@@ -501,14 +506,14 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                               e.stopPropagation()
                               handleTogglePlayingStatus(lineup.id, lineup.playing_status, lineup.member)
                             }}
-                            disabled={hasOngoingQuarter || loading || swapModePlayer}
+                            disabled={hasOngoingQuarter || togglingLineups.has(lineup.id) || swapModePlayer}
                             className={`
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${lineup.playing_status === 'playing'
                                 ? 'bg-green-500 text-white hover:bg-green-600'
                                 : 'bg-gray-400 text-white hover:bg-gray-500'
                               }
-                              ${hasOngoingQuarter || swapModePlayer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                              ${hasOngoingQuarter || togglingLineups.has(lineup.id) || swapModePlayer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             title={hasOngoingQuarter ? '쿼터 진행 중에는 변경 불가' : swapModePlayer ? '순번 교체 모드 중에는 사용 불가' : '클릭하여 출전/벤치 전환'}
                           >
@@ -714,14 +719,14 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                               e.stopPropagation()
                               handleTogglePlayingStatus(lineup.id, lineup.playing_status, lineup.member)
                             }}
-                            disabled={hasOngoingQuarter || loading || swapModePlayer}
+                            disabled={hasOngoingQuarter || togglingLineups.has(lineup.id) || swapModePlayer}
                             className={`
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${lineup.playing_status === 'playing'
                                 ? 'bg-green-500 text-white hover:bg-green-600'
                                 : 'bg-gray-400 text-white hover:bg-gray-500'
                               }
-                              ${hasOngoingQuarter || swapModePlayer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                              ${hasOngoingQuarter || togglingLineups.has(lineup.id) || swapModePlayer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             title={hasOngoingQuarter ? '쿼터 진행 중에는 변경 불가' : swapModePlayer ? '순번 교체 모드 중에는 사용 불가' : '클릭하여 출전/벤치 전환'}
                           >
