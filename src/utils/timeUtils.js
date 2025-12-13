@@ -40,8 +40,8 @@ export const formatDateTimeKST = (dateString) => {
 
   const date = new Date(dateString)
 
-  // 한국 시간대로 변환
-  const kstString = date.toLocaleString('ko-KR', {
+  // 각 부분을 개별적으로 포맷팅
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul',
     year: 'numeric',
     month: '2-digit',
@@ -51,8 +51,13 @@ export const formatDateTimeKST = (dateString) => {
     hour12: false
   })
 
-  // "YYYY. MM. DD. HH:MM" 형식으로 변환 (초 제거)
-  return kstString.replace(/:\d{2}$/, '')
+  const parts = formatter.formatToParts(date)
+  const values = {}
+  parts.forEach(part => {
+    values[part.type] = part.value
+  })
+
+  return `${values.year}. ${values.month}. ${values.day}. ${values.hour}:${values.minute}`
 }
 
 /**
