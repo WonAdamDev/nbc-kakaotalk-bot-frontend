@@ -323,7 +323,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
         <div className="flex flex-wrap gap-3 mb-6">
           <button
             type="button"
-            onClick={() => setShowArrivalModal(true)}
+            onClick={() => {
+              handleCancelSwapMode()
+              setShowArrivalModal(true)
+            }}
             className="btn btn-primary"
           >
             ✅ 출석
@@ -331,7 +334,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
           <button
             type="button"
-            onClick={() => setShowEarlyLeaveModal(true)}
+            onClick={() => {
+              handleCancelSwapMode()
+              setShowEarlyLeaveModal(true)
+            }}
             disabled={!canRemovePlayer}
             className="btn btn-danger"
             title={hasOngoingQuarter ? '쿼터 진행 중에는 조퇴 처리할 수 없습니다' : '조퇴할 선수를 선택하세요'}
