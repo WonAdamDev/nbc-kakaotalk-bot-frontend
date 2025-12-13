@@ -443,26 +443,20 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                                 handleCancelSwapMode()
                               } else if (!swapModePlayer) {
                                 handleEnterSwapMode(team, lineup.number, lineup.member)
-                              } else {
-                                handleSwapWithPlayer(team, lineup.number)
                               }
                             }}
-                            disabled={hasOngoingQuarter || loading}
+                            disabled={hasOngoingQuarter || loading || (swapModePlayer && !isSwapSource)}
                             className={`
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${(() => {
                                 const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                                 if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                   return 'bg-orange-500 text-white hover:bg-orange-600'
-                                } else if (swapModePlayer && swapModePlayer.team === team) {
-                                  return 'bg-blue-500 text-white hover:bg-blue-600'
-                                } else if (swapModePlayer) {
-                                  return 'bg-blue-500 text-white hover:bg-blue-600'
                                 } else {
                                   return 'bg-blue-500 text-white hover:bg-blue-600'
                                 }
                               })()}
-                              ${hasOngoingQuarter ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                              ${hasOngoingQuarter || (swapModePlayer && !isSwapSource) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             title={(() => {
                               const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
@@ -658,26 +652,20 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                                 handleCancelSwapMode()
                               } else if (!swapModePlayer) {
                                 handleEnterSwapMode(team, lineup.number, lineup.member)
-                              } else {
-                                handleSwapWithPlayer(team, lineup.number)
                               }
                             }}
-                            disabled={hasOngoingQuarter || loading}
+                            disabled={hasOngoingQuarter || loading || (swapModePlayer && !isSwapSource)}
                             className={`
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${(() => {
                                 const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                                 if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                   return 'bg-orange-500 text-white hover:bg-orange-600'
-                                } else if (swapModePlayer && swapModePlayer.team === team) {
-                                  return 'bg-blue-500 text-white hover:bg-blue-600'
-                                } else if (swapModePlayer) {
-                                  return 'bg-blue-500 text-white hover:bg-blue-600'
                                 } else {
                                   return 'bg-blue-500 text-white hover:bg-blue-600'
                                 }
                               })()}
-                              ${hasOngoingQuarter ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                              ${hasOngoingQuarter || (swapModePlayer && !isSwapSource) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             title={(() => {
                               const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
