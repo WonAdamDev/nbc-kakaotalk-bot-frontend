@@ -136,6 +136,14 @@ export default function GamePage() {
         )
         break
 
+      case 'quarter_cancelled':
+        // 쿼터 취소 - 해당 쿼터 삭제 및 게임 상태 업데이트
+        setQuarters(prev =>
+          prev.filter(q => q.quarter !== data.quarter_number)
+        )
+        setGame(prev => ({ ...prev, current_quarter: data.current_quarter }))
+        break
+
       case 'score_updated':
         // 점수 업데이트
         setQuarters(prev =>

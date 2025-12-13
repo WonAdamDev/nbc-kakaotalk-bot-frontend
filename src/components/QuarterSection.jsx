@@ -64,6 +64,21 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
     }
   }
 
+  const handleCancelQuarter = async (quarterNumber) => {
+    if (!confirm(`${quarterNumber}쿼터를 취소하시겠습니까?\n(쿼터 기록이 삭제되고 출전 선수를 다시 선택할 수 있습니다)`)) return
+
+    try {
+      setLoading(true)
+      await axios.delete(`${API_URL}/api/game/${gameId}/quarter/${quarterNumber}/cancel`)
+      // WebSocket이 자동으로 업데이트
+    } catch (err) {
+      alert('쿼터 취소 실패: ' + (err.response?.data?.error || err.message))
+      onUpdate() // 에러 발생 시에만 재로드
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleUpdateScore = async (quarterNumber) => {
     const scores = scoreInputs[quarterNumber]
     if (!scores) return
@@ -183,13 +198,23 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                 </div>
 
                 {quarter.status === '진행중' && game.status !== '종료' && (
-                  <button
-                    onClick={() => handleEndQuarter(quarter.quarter)}
-                    disabled={loading}
-                    className="btn btn-secondary text-sm"
-                  >
-                    ⏹️ 종료
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleCancelQuarter(quarter.quarter)}
+                      disabled={loading}
+                      className="btn btn-danger text-sm"
+                      title="쿼터를 취소하고 출전 선수를 다시 선택할 수 있습니다"
+                    >
+                      ❌ 취소
+                    </button>
+                    <button
+                      onClick={() => handleEndQuarter(quarter.quarter)}
+                      disabled={loading}
+                      className="btn btn-secondary text-sm"
+                    >
+                      ⏹️ 종료
+                    </button>
+                  </div>
                 )}
               </div>
 
