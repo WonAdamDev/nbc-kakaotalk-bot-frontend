@@ -108,10 +108,16 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
   }
 
   const handleScoreChange = (quarterNumber, team, value) => {
+    // 현재 쿼터 찾기
+    const quarter = quarters.find(q => q.quarter === quarterNumber)
+
     setScoreInputs(prev => ({
       ...prev,
       [quarterNumber]: {
-        ...(prev[quarterNumber] || {}),
+        // 기존 입력값 또는 현재 쿼터 점수를 기본값으로 사용
+        blue: prev[quarterNumber]?.blue ?? (quarter?.score?.blue ?? 0).toString(),
+        white: prev[quarterNumber]?.white ?? (quarter?.score?.white ?? 0).toString(),
+        // 수정된 값 덮어쓰기
         [team]: value
       }
     }))
