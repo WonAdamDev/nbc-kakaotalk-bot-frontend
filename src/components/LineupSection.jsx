@@ -438,6 +438,9 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
+                              // 순번 교체 모드 중 다른 선수 버튼 클릭 시 무시
+                              if (swapModePlayer && !isSwapSource) return
+
                               const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 handleCancelSwapMode()
@@ -450,11 +453,12 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${(() => {
                                 const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
+                                // 선택된 선수는 오렌지색
                                 if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                   return 'bg-orange-500 text-white hover:bg-orange-600'
-                                } else {
-                                  return 'bg-blue-500 text-white hover:bg-blue-600'
                                 }
+                                // 기본 상태는 파란색
+                                return 'bg-blue-500 text-white hover:bg-blue-600'
                               })()}
                               ${hasOngoingQuarter || (swapModePlayer && !isSwapSource) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
@@ -647,6 +651,9 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
+                              // 순번 교체 모드 중 다른 선수 버튼 클릭 시 무시
+                              if (swapModePlayer && !isSwapSource) return
+
                               const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 handleCancelSwapMode()
@@ -659,11 +666,12 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${(() => {
                                 const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
+                                // 선택된 선수는 오렌지색
                                 if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                   return 'bg-orange-500 text-white hover:bg-orange-600'
-                                } else {
-                                  return 'bg-blue-500 text-white hover:bg-blue-600'
                                 }
+                                // 기본 상태는 파란색
+                                return 'bg-blue-500 text-white hover:bg-blue-600'
                               })()}
                               ${hasOngoingQuarter || (swapModePlayer && !isSwapSource) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
