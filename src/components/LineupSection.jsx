@@ -258,7 +258,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
       />
 
       {/* 순번 교체 모드 오버레이 */}
-      {swapModePlayer && (
+      {swapModePlayer && !showArrivalModal && !showEarlyLeaveModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-30 z-40"
           onClick={handleCancelSwapMode}
