@@ -149,7 +149,7 @@ export default function GamePage() {
         setQuarters(prev =>
           prev.map(q =>
             q.quarter === data.quarter
-              ? { ...q, score: { blue: data.score_blue, white: data.score_white } }
+              ? { ...q, score: { home: data.score_home, away: data.score_away } }
               : q
           )
         )

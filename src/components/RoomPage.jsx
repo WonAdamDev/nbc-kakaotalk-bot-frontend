@@ -202,7 +202,7 @@ export default function RoomPage() {
                       최종 점수
                     </span>
                     <span className="text-sm font-bold">
-                      {game.final_score.blue} : {game.final_score.white}
+                      {game.final_score.home} : {game.final_score.away}
                     </span>
                   </div>
                 )}

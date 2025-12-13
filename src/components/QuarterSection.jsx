@@ -83,14 +83,14 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
     const scores = scoreInputs[quarterNumber]
     if (!scores) return
 
-    const scoreBlue = parseInt(scores.blue) || 0
-    const scoreWhite = parseInt(scores.white) || 0
+    const scoreHome = parseInt(scores.home) || 0
+    const scoreAway = parseInt(scores.away) || 0
 
     try {
       setLoading(true)
       await axios.put(`${API_URL}/api/game/${gameId}/quarter/${quarterNumber}/score`, {
-        score_blue: scoreBlue,
-        score_white: scoreWhite
+        score_home: scoreHome,
+        score_away: scoreAway
       })
       // 입력 필드 초기화 (해당 쿼터 제거하여 quarter.score로 fallback)
       setScoreInputs(prev => {
@@ -115,8 +115,8 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
       ...prev,
       [quarterNumber]: {
         // 기존 입력값 또는 현재 쿼터 점수를 기본값으로 사용
-        blue: prev[quarterNumber]?.blue ?? (quarter?.score?.blue ?? 0).toString(),
-        white: prev[quarterNumber]?.white ?? (quarter?.score?.white ?? 0).toString(),
+        home: prev[quarterNumber]?.home ?? (quarter?.score?.home ?? 0).toString(),
+        away: prev[quarterNumber]?.away ?? (quarter?.score?.away ?? 0).toString(),
         // 수정된 값 덮어쓰기
         [team]: value
       }
@@ -260,7 +260,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                     <div>
                       <p className="text-xs text-gray-500 mb-1">출전 (코트)</p>
                       <div className="flex flex-wrap gap-1">
-                        {quarter.playing?.blue?.map(num => (
+                        {quarter.playing?.home?.map(num => (
                           <span
                             key={num}
                             className="px-2 py-1 bg-blue-500 text-white rounded text-sm font-medium"
@@ -273,7 +273,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                     <div>
                       <p className="text-xs text-gray-500 mb-1">벤치</p>
                       <div className="flex flex-wrap gap-1">
-                        {quarter.bench?.blue?.map(num => (
+                        {quarter.bench?.home?.map(num => (
                           <span
                             key={num}
                             className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
@@ -293,7 +293,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                     <div>
                       <p className="text-xs text-gray-500 mb-1">출전 (코트)</p>
                       <div className="flex flex-wrap gap-1">
-                        {quarter.playing?.white?.map(num => (
+                        {quarter.playing?.away?.map(num => (
                           <span
                             key={num}
                             className="px-2 py-1 bg-gray-600 text-white rounded text-sm font-medium"
@@ -306,7 +306,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                     <div>
                       <p className="text-xs text-gray-500 mb-1">벤치</p>
                       <div className="flex flex-wrap gap-1">
-                        {quarter.bench?.white?.map(num => (
+                        {quarter.bench?.away?.map(num => (
                           <span
                             key={num}
                             className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm border border-gray-300"
@@ -329,8 +329,8 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                     <input
                       type="number"
                       min="0"
-                      value={scoreInputs[quarter.quarter]?.blue ?? quarter.score?.blue ?? 0}
-                      onChange={(e) => handleScoreChange(quarter.quarter, 'blue', e.target.value)}
+                      value={scoreInputs[quarter.quarter]?.home ?? quarter.score?.home ?? 0}
+                      onChange={(e) => handleScoreChange(quarter.quarter, 'home', e.target.value)}
                       disabled={game.status === '종료'}
                       className="input w-20 text-center"
                     />
@@ -341,8 +341,8 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                     <input
                       type="number"
                       min="0"
-                      value={scoreInputs[quarter.quarter]?.white ?? quarter.score?.white ?? 0}
-                      onChange={(e) => handleScoreChange(quarter.quarter, 'white', e.target.value)}
+                      value={scoreInputs[quarter.quarter]?.away ?? quarter.score?.away ?? 0}
+                      onChange={(e) => handleScoreChange(quarter.quarter, 'away', e.target.value)}
                       disabled={game.status === '종료'}
                       className="input w-20 text-center"
                     />

@@ -1,8 +1,8 @@
 export default function ScoreBoard({ game, quarters }) {
   // 각 팀의 총 점수 계산 (마지막 쿼터의 누적 점수)
   const lastQuarter = quarters.length > 0 ? quarters[quarters.length - 1] : null
-  const totalScoreBlue = lastQuarter?.score?.blue || 0
-  const totalScoreWhite = lastQuarter?.score?.white || 0
+  const totalScoreHome = lastQuarter?.score?.home || 0
+  const totalScoreAway = lastQuarter?.score?.away || 0
 
   // 팀 이름 표시 (팀 선택 전: HOME/AWAY, 선택 후: 팀 이름)
   const homeTeamName = game.team_home || 'HOME'
@@ -16,11 +16,11 @@ export default function ScoreBoard({ game, quarters }) {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-blue-50 rounded-lg p-6 text-center border-2 border-blue-200">
           <p className="text-sm text-blue-600 font-semibold mb-2">{homeTeamName}</p>
-          <p className="text-5xl font-bold text-blue-700">{totalScoreBlue}</p>
+          <p className="text-5xl font-bold text-blue-700">{totalScoreHome}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-6 text-center border-2 border-gray-300">
           <p className="text-sm text-gray-600 font-semibold mb-2">{awayTeamName}</p>
-          <p className="text-5xl font-bold text-gray-700">{totalScoreWhite}</p>
+          <p className="text-5xl font-bold text-gray-700">{totalScoreAway}</p>
         </div>
       </div>
 
@@ -50,16 +50,16 @@ export default function ScoreBoard({ game, quarters }) {
                 {quarters.map((quarter, index) => {
                   // 이전 쿼터의 누적 점수
                   const prevQuarter = index > 0 ? quarters[index - 1] : null
-                  const prevBlue = prevQuarter?.score?.blue || 0
-                  const prevWhite = prevQuarter?.score?.white || 0
+                  const prevHome = prevQuarter?.score?.home || 0
+                  const prevAway = prevQuarter?.score?.away || 0
 
                   // 현재 쿼터의 누적 점수
-                  const currentBlue = quarter.score?.blue || 0
-                  const currentWhite = quarter.score?.white || 0
+                  const currentHome = quarter.score?.home || 0
+                  const currentAway = quarter.score?.away || 0
 
                   // 해당 쿼터의 득점 (누적 점수 - 이전 누적 점수)
-                  const quarterScoreBlue = currentBlue - prevBlue
-                  const quarterScoreWhite = currentWhite - prevWhite
+                  const quarterScoreHome = currentHome - prevHome
+                  const quarterScoreAway = currentAway - prevAway
 
                   return (
                     <tr key={quarter.quarter}>
@@ -67,10 +67,10 @@ export default function ScoreBoard({ game, quarters }) {
                         Q{quarter.quarter}
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-blue-700 font-semibold">
-                        {quarterScoreBlue}
+                        {quarterScoreHome}
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-gray-700 font-semibold">
-                        {quarterScoreWhite}
+                        {quarterScoreAway}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`badge ${
@@ -95,7 +95,7 @@ export default function ScoreBoard({ game, quarters }) {
             🏆 승자: {game.winner}
           </p>
           <p className="text-sm text-yellow-700 mt-1">
-            최종 점수 - {homeTeamName}: {game.final_score?.blue}, {awayTeamName}: {game.final_score?.white}
+            최종 점수 - {homeTeamName}: {game.final_score?.home}, {awayTeamName}: {game.final_score?.away}
           </p>
         </div>
       )}

@@ -409,7 +409,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
                   return (
                     <div
-                      key={lineup.id || `blue-${lineup.number}`}
+                      key={lineup.id || `home-${lineup.number}`}
                       draggable={canDrag}
                       onDragStart={(e) => canDrag && handleDragStart(e, 'home', lineup.number, lineup.member)}
                       onDragOver={(e) => canDrag && handleDragOver(e, 'home', lineup.number)}
@@ -622,7 +622,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
                   return (
                     <div
-                      key={lineup.id || `white-${lineup.number}`}
+                      key={lineup.id || `away-${lineup.number}`}
                       draggable={canDrag}
                       onDragStart={(e) => canDrag && handleDragStart(e, 'away', lineup.number, lineup.member)}
                       onDragOver={(e) => canDrag && handleDragOver(e, 'away', lineup.number)}

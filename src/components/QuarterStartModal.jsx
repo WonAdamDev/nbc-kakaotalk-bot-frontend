@@ -8,10 +8,10 @@ export default function QuarterStartModal({
   game,
   onConfirm
 }) {
-  const [playingBlue, setPlayingBlue] = useState([])
-  const [benchBlue, setBenchBlue] = useState([])
-  const [playingWhite, setPlayingWhite] = useState([])
-  const [benchWhite, setBenchWhite] = useState([])
+  const [playingHome, setPlayingHome] = useState([])
+  const [benchHome, setBenchHome] = useState([])
+  const [playingAway, setPlayingAway] = useState([])
+  const [benchAway, setBenchAway] = useState([])
   const [draggedItem, setDraggedItem] = useState(null)
   const [dragOverItem, setDragOverItem] = useState(null)
 
@@ -31,8 +31,8 @@ export default function QuarterStartModal({
         .filter(l => (l.playing_status || 'playing') === 'bench')
         .map(l => l.number)
 
-      setPlayingBlue(homePlayingPlayers)
-      setBenchBlue(homeBenchPlayers)
+      setPlayingHome(homePlayingPlayers)
+      setBenchHome(homeBenchPlayers)
 
       // away팀
       const awayLineups = lineups.away || []
@@ -43,8 +43,8 @@ export default function QuarterStartModal({
         .filter(l => (l.playing_status || 'playing') === 'bench')
         .map(l => l.number)
 
-      setPlayingWhite(awayPlayingPlayers)
-      setBenchWhite(awayBenchPlayers)
+      setPlayingAway(awayPlayingPlayers)
+      setBenchAway(awayBenchPlayers)
     }
   }, [preview, lineups])
 
@@ -52,7 +52,7 @@ export default function QuarterStartModal({
 
   // 선수 번호로 이름 찾기 (동명이인 있으면 ID 표시)
   const getMemberName = (team, number) => {
-    const teamKey = team === 'blue' ? 'home' : 'away'
+    const teamKey = team === 'home' ? 'home' : 'away'
     const lineup = lineups?.[teamKey]?.find(l => l.number === number)
 
     if (!lineup) return `#${number}`
@@ -73,10 +73,10 @@ export default function QuarterStartModal({
   // 이대로 시작
   const handleStartAsIs = () => {
     onConfirm({
-      playing_blue: playingBlue,
-      bench_blue: benchBlue,
-      playing_white: playingWhite,
-      bench_white: benchWhite
+      playing_home: playingHome,
+      bench_home: benchHome,
+      playing_away: playingAway,
+      bench_away: benchAway
     })
   }
 
@@ -127,9 +127,9 @@ export default function QuarterStartModal({
 
     // 같은 position 내에서 교체
     if (fromPosition === position) {
-      if (team === 'blue') {
+      if (team === 'home') {
         if (position === 'playing') {
-          setPlayingBlue(prev => {
+          setPlayingHome(prev => {
             const newArr = [...prev]
             const temp = newArr[fromIndex]
             newArr[fromIndex] = newArr[toIndex]
@@ -137,7 +137,7 @@ export default function QuarterStartModal({
             return newArr
           })
         } else {
-          setBenchBlue(prev => {
+          setBenchHome(prev => {
             const newArr = [...prev]
             const temp = newArr[fromIndex]
             newArr[fromIndex] = newArr[toIndex]
@@ -147,7 +147,7 @@ export default function QuarterStartModal({
         }
       } else {
         if (position === 'playing') {
-          setPlayingWhite(prev => {
+          setPlayingAway(prev => {
             const newArr = [...prev]
             const temp = newArr[fromIndex]
             newArr[fromIndex] = newArr[toIndex]
@@ -155,7 +155,7 @@ export default function QuarterStartModal({
             return newArr
           })
         } else {
-          setBenchWhite(prev => {
+          setBenchAway(prev => {
             const newArr = [...prev]
             const temp = newArr[fromIndex]
             newArr[fromIndex] = newArr[toIndex]
@@ -166,33 +166,33 @@ export default function QuarterStartModal({
       }
     } else {
       // 다른 position 간 교체 (출전 ↔ 벤치)
-      if (team === 'blue') {
+      if (team === 'home') {
         if (fromPosition === 'playing') {
           // 출전 → 벤치
-          const playingPlayer = playingBlue[fromIndex]
-          const benchPlayer = benchBlue[toIndex]
+          const playingPlayer = playingHome[fromIndex]
+          const benchPlayer = benchHome[toIndex]
 
-          setPlayingBlue(prev => {
+          setPlayingHome(prev => {
             const newArr = [...prev]
             newArr[fromIndex] = benchPlayer
             return newArr
           })
-          setBenchBlue(prev => {
+          setBenchHome(prev => {
             const newArr = [...prev]
             newArr[toIndex] = playingPlayer
             return newArr
           })
         } else {
           // 벤치 → 출전
-          const benchPlayer = benchBlue[fromIndex]
-          const playingPlayer = playingBlue[toIndex]
+          const benchPlayer = benchHome[fromIndex]
+          const playingPlayer = playingHome[toIndex]
 
-          setBenchBlue(prev => {
+          setBenchHome(prev => {
             const newArr = [...prev]
             newArr[fromIndex] = playingPlayer
             return newArr
           })
-          setPlayingBlue(prev => {
+          setPlayingHome(prev => {
             const newArr = [...prev]
             newArr[toIndex] = benchPlayer
             return newArr
@@ -201,30 +201,30 @@ export default function QuarterStartModal({
       } else {
         if (fromPosition === 'playing') {
           // 출전 → 벤치
-          const playingPlayer = playingWhite[fromIndex]
-          const benchPlayer = benchWhite[toIndex]
+          const playingPlayer = playingAway[fromIndex]
+          const benchPlayer = benchAway[toIndex]
 
-          setPlayingWhite(prev => {
+          setPlayingAway(prev => {
             const newArr = [...prev]
             newArr[fromIndex] = benchPlayer
             return newArr
           })
-          setBenchWhite(prev => {
+          setBenchAway(prev => {
             const newArr = [...prev]
             newArr[toIndex] = playingPlayer
             return newArr
           })
         } else {
           // 벤치 → 출전
-          const benchPlayer = benchWhite[fromIndex]
-          const playingPlayer = playingWhite[toIndex]
+          const benchPlayer = benchAway[fromIndex]
+          const playingPlayer = playingAway[toIndex]
 
-          setBenchWhite(prev => {
+          setBenchAway(prev => {
             const newArr = [...prev]
             newArr[fromIndex] = playingPlayer
             return newArr
           })
-          setPlayingWhite(prev => {
+          setPlayingAway(prev => {
             const newArr = [...prev]
             newArr[toIndex] = benchPlayer
             return newArr
@@ -244,26 +244,26 @@ export default function QuarterStartModal({
 
   // 선수 이동 (출전 ↔ 벤치)
   const movePlayer = (team, from, number) => {
-    if (team === 'blue') {
+    if (team === 'home') {
       if (from === 'playing') {
-        setPlayingBlue(prev => prev.filter(n => n !== number))
-        setBenchBlue(prev => [...prev, number])
+        setPlayingHome(prev => prev.filter(n => n !== number))
+        setBenchHome(prev => [...prev, number])
       } else {
-        setBenchBlue(prev => prev.filter(n => n !== number))
-        setPlayingBlue(prev => [...prev, number])
+        setBenchHome(prev => prev.filter(n => n !== number))
+        setPlayingHome(prev => [...prev, number])
       }
     } else {
       if (from === 'playing') {
-        setPlayingWhite(prev => prev.filter(n => n !== number))
-        setBenchWhite(prev => [...prev, number])
+        setPlayingAway(prev => prev.filter(n => n !== number))
+        setBenchAway(prev => [...prev, number])
       } else {
-        setBenchWhite(prev => prev.filter(n => n !== number))
-        setPlayingWhite(prev => [...prev, number])
+        setBenchAway(prev => prev.filter(n => n !== number))
+        setPlayingAway(prev => [...prev, number])
       }
     }
   }
 
-  const canConfirm = playingBlue.length === 5 && playingWhite.length === 5
+  const canConfirm = playingHome.length === 5 && playingAway.length === 5
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -295,27 +295,27 @@ export default function QuarterStartModal({
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-gray-700">
-                  출전 (코트) - {playingBlue.length}명
+                  출전 (코트) - {playingHome.length}명
                 </p>
-                {playingBlue.length !== 5 && (
+                {playingHome.length !== 5 && (
                   <span className="text-xs text-red-500">5명 필요</span>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {playingBlue.map((num, index) => {
-                  const isDragging = draggedItem?.team === 'blue' && draggedItem?.position === 'playing' && draggedItem?.index === index
-                  const isDropTarget = dragOverItem?.team === 'blue' && dragOverItem?.position === 'playing' && dragOverItem?.index === index
+                {playingHome.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'home' && draggedItem?.position === 'playing' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'home' && dragOverItem?.position === 'playing' && dragOverItem?.index === index
 
                   return (
                     <div
                       key={num}
                       draggable={true}
-                      onDragStart={(e) => handleDragStart(e, 'blue', 'playing', index, num)}
-                      onDragOver={(e) => handleDragOver(e, 'blue', 'playing', index)}
+                      onDragStart={(e) => handleDragStart(e, 'home', 'playing', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'home', 'playing', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, 'blue', 'playing', index)}
+                      onDrop={(e) => handleDrop(e, 'home', 'playing', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => movePlayer('blue', 'playing', num)}
+                      onClick={() => movePlayer('home', 'playing', num)}
                       className={`
                         px-3 py-2 bg-blue-500 text-white rounded font-medium transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
@@ -323,7 +323,7 @@ export default function QuarterStartModal({
                         hover:bg-blue-600 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('blue', num)} ⇄
+                      {num}. {getMemberName('home', num)} ⇄
                     </div>
                   )
                 })}
@@ -333,23 +333,23 @@ export default function QuarterStartModal({
             {/* 벤치 */}
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                벤치 - {benchBlue.length}명
+                벤치 - {benchHome.length}명
               </p>
               <div className="flex flex-wrap gap-2">
-                {benchBlue.map((num, index) => {
-                  const isDragging = draggedItem?.team === 'blue' && draggedItem?.position === 'bench' && draggedItem?.index === index
-                  const isDropTarget = dragOverItem?.team === 'blue' && dragOverItem?.position === 'bench' && dragOverItem?.index === index
+                {benchHome.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'home' && draggedItem?.position === 'bench' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'home' && dragOverItem?.position === 'bench' && dragOverItem?.index === index
 
                   return (
                     <div
                       key={num}
                       draggable={true}
-                      onDragStart={(e) => handleDragStart(e, 'blue', 'bench', index, num)}
-                      onDragOver={(e) => handleDragOver(e, 'blue', 'bench', index)}
+                      onDragStart={(e) => handleDragStart(e, 'home', 'bench', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'home', 'bench', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, 'blue', 'bench', index)}
+                      onDrop={(e) => handleDrop(e, 'home', 'bench', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => movePlayer('blue', 'bench', num)}
+                      onClick={() => movePlayer('home', 'bench', num)}
                       className={`
                         px-3 py-2 bg-blue-100 text-blue-700 rounded transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
@@ -357,11 +357,11 @@ export default function QuarterStartModal({
                         hover:bg-blue-200 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('blue', num)} ⇄
+                      {num}. {getMemberName('home', num)} ⇄
                     </div>
                   )
                 })}
-                {benchBlue.length === 0 && (
+                {benchHome.length === 0 && (
                   <span className="text-sm text-gray-400">벤치 선수 없음</span>
                 )}
               </div>
@@ -376,27 +376,27 @@ export default function QuarterStartModal({
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-gray-700">
-                  출전 (코트) - {playingWhite.length}명
+                  출전 (코트) - {playingAway.length}명
                 </p>
-                {playingWhite.length !== 5 && (
+                {playingAway.length !== 5 && (
                   <span className="text-xs text-red-500">5명 필요</span>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {playingWhite.map((num, index) => {
-                  const isDragging = draggedItem?.team === 'white' && draggedItem?.position === 'playing' && draggedItem?.index === index
-                  const isDropTarget = dragOverItem?.team === 'white' && dragOverItem?.position === 'playing' && dragOverItem?.index === index
+                {playingAway.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'away' && draggedItem?.position === 'playing' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'away' && dragOverItem?.position === 'playing' && dragOverItem?.index === index
 
                   return (
                     <div
                       key={num}
                       draggable={true}
-                      onDragStart={(e) => handleDragStart(e, 'white', 'playing', index, num)}
-                      onDragOver={(e) => handleDragOver(e, 'white', 'playing', index)}
+                      onDragStart={(e) => handleDragStart(e, 'away', 'playing', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'away', 'playing', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, 'white', 'playing', index)}
+                      onDrop={(e) => handleDrop(e, 'away', 'playing', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => movePlayer('white', 'playing', num)}
+                      onClick={() => movePlayer('away', 'playing', num)}
                       className={`
                         px-3 py-2 bg-gray-600 text-white rounded font-medium transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
@@ -404,7 +404,7 @@ export default function QuarterStartModal({
                         hover:bg-gray-700 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('white', num)} ⇄
+                      {num}. {getMemberName('away', num)} ⇄
                     </div>
                   )
                 })}
@@ -414,23 +414,23 @@ export default function QuarterStartModal({
             {/* 벤치 */}
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                벤치 - {benchWhite.length}명
+                벤치 - {benchAway.length}명
               </p>
               <div className="flex flex-wrap gap-2">
-                {benchWhite.map((num, index) => {
-                  const isDragging = draggedItem?.team === 'white' && draggedItem?.position === 'bench' && draggedItem?.index === index
-                  const isDropTarget = dragOverItem?.team === 'white' && dragOverItem?.position === 'bench' && dragOverItem?.index === index
+                {benchAway.map((num, index) => {
+                  const isDragging = draggedItem?.team === 'away' && draggedItem?.position === 'bench' && draggedItem?.index === index
+                  const isDropTarget = dragOverItem?.team === 'away' && dragOverItem?.position === 'bench' && dragOverItem?.index === index
 
                   return (
                     <div
                       key={num}
                       draggable={true}
-                      onDragStart={(e) => handleDragStart(e, 'white', 'bench', index, num)}
-                      onDragOver={(e) => handleDragOver(e, 'white', 'bench', index)}
+                      onDragStart={(e) => handleDragStart(e, 'away', 'bench', index, num)}
+                      onDragOver={(e) => handleDragOver(e, 'away', 'bench', index)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, 'white', 'bench', index)}
+                      onDrop={(e) => handleDrop(e, 'away', 'bench', index)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => movePlayer('white', 'bench', num)}
+                      onClick={() => movePlayer('away', 'bench', num)}
                       className={`
                         px-3 py-2 bg-gray-100 text-gray-700 rounded border border-gray-300 transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
@@ -438,11 +438,11 @@ export default function QuarterStartModal({
                         hover:bg-gray-200 cursor-move
                       `}
                     >
-                      {num}. {getMemberName('white', num)} ⇄
+                      {num}. {getMemberName('away', num)} ⇄
                     </div>
                   )
                 })}
-                {benchWhite.length === 0 && (
+                {benchAway.length === 0 && (
                   <span className="text-sm text-gray-400">벤치 선수 없음</span>
                 )}
               </div>
@@ -467,7 +467,7 @@ export default function QuarterStartModal({
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            🏀 쿼터 시작 ({playingBlue.length}/5 vs {playingWhite.length}/5)
+            🏀 쿼터 시작 ({playingHome.length}/5 vs {playingAway.length}/5)
           </button>
         </div>
       </div>

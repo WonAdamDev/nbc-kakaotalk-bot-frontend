@@ -228,11 +228,11 @@ export default function GameList() {
                       <div className="mt-3 flex items-center gap-4">
                         <div className="text-sm">
                           <span className="text-blue-400 font-semibold">
-                            {game.team_home || 'HOME'} {game.final_score_blue || 0}
+                            {game.team_home || 'HOME'} {game.final_score_home || 0}
                           </span>
                           {' : '}
                           <span className="text-white font-semibold">
-                            {game.team_away || 'AWAY'} {game.final_score_white || 0}
+                            {game.team_away || 'AWAY'} {game.final_score_away || 0}
                           </span>
                         </div>
                         {game.winner && (
