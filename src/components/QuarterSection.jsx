@@ -18,10 +18,10 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
   const canStartNewQuarter = game.status === '진행중' && !currentQuarter && quarters.length < 10 // 최대 10쿼터
 
   const handleStartQuarter = async () => {
-    const blueCount = lineups.블루?.length || 0
-    const whiteCount = lineups.화이트?.length || 0
+    const homeCount = lineups.home?.length || 0
+    const awayCount = lineups.away?.length || 0
 
-    if (blueCount < 5 || whiteCount < 5) {
+    if (homeCount < 5 || awayCount < 5) {
       alert('각 팀은 최소 5명의 선수가 필요합니다.')
       return
     }
@@ -156,7 +156,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
     }
 
     // 동명이인 확인 (현재 라인업 기준)
-    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    const allLineups = [...(lineups?.home || []), ...(lineups?.away || [])]
     const duplicateNames = allLineups.filter(l => l.member === memberName)
     const hasDuplicate = duplicateNames.length > 1
 
@@ -259,7 +259,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                             key={num}
                             className="px-2 py-1 bg-blue-500 text-white rounded text-sm font-medium"
                           >
-                            {num}. {getMemberName('블루', num, quarter)}
+                            {num}. {getMemberName('home', num, quarter)}
                           </span>
                         ))}
                       </div>
@@ -272,7 +272,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                             key={num}
                             className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
                           >
-                            {num}. {getMemberName('블루', num, quarter)}
+                            {num}. {getMemberName('home', num, quarter)}
                           </span>
                         ))}
                       </div>
@@ -292,7 +292,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                             key={num}
                             className="px-2 py-1 bg-gray-600 text-white rounded text-sm font-medium"
                           >
-                            {num}. {getMemberName('화이트', num, quarter)}
+                            {num}. {getMemberName('away', num, quarter)}
                           </span>
                         ))}
                       </div>
@@ -305,7 +305,7 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
                             key={num}
                             className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm border border-gray-300"
                           >
-                            {num}. {getMemberName('화이트', num, quarter)}
+                            {num}. {getMemberName('away', num, quarter)}
                           </span>
                         ))}
                       </div>

@@ -63,7 +63,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
   // 동명이인 확인 헬퍼 함수
   const hasDuplicateName = (memberName) => {
-    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    const allLineups = [...(lineups?.home || []), ...(lineups?.away || [])]
     const duplicates = allLineups.filter(l => l.member === memberName)
     return duplicates.length > 1
   }
@@ -124,6 +124,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
 
   // 순번 교체 모드 진입
   const handleEnterSwapMode = (team, number, member) => {
+    // team은 항상 'home' 또는 'away'여야 함
     setSwapModePlayer({ team, number, member })
   }
 
@@ -346,7 +347,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
             <h3 className="text-lg font-semibold">{homeTeamName}</h3>
-            <span className="badge badge-blue">{lineups.블루?.length || 0}명</span>
+            <span className="badge badge-blue">{lineups.home?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">
                 {hasOngoingQuarter ? '⏸️ 쿼터 진행중' : '✨ 드래그하여 순번 변경'}
@@ -355,23 +356,23 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
           </div>
 
           <div className="space-y-2">
-            {lineups.블루?.length === 0 ? (
+            {lineups.home?.length === 0 ? (
               <div
                 onDragOver={(e) => {
                   if (!canSwapLineup) return
                   // 빈 팀에 드롭할 때는 다음 번호 (현재 선수 수 + 1)
-                  const nextNumber = (lineups.블루?.length || 0) + 1
-                  handleDragOver(e, '블루', nextNumber)
+                  const nextNumber = (lineups.home?.length || 0) + 1
+                  handleDragOver(e, 'home', nextNumber)
                 }}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => {
                   if (!canSwapLineup) return
-                  const nextNumber = (lineups.블루?.length || 0) + 1
-                  handleDrop(e, '블루', nextNumber)
+                  const nextNumber = (lineups.home?.length || 0) + 1
+                  handleDrop(e, 'home', nextNumber)
                 }}
                 className={`
                   p-8 rounded-lg border-2 border-dashed transition-all
-                  ${dragOverPlayer?.team === '블루' ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-gray-50'}
+                  ${dragOverPlayer?.team === 'home' ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-gray-50'}
                   ${canSwapLineup && draggedPlayer ? 'hover:border-blue-400' : ''}
                 `}
               >
@@ -381,21 +382,21 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
               </div>
             ) : (
               <>
-                {lineups.블루?.map((lineup, idx) => {
-                  const isDragging = draggedPlayer?.team === '블루' && draggedPlayer?.number === lineup.number
-                  const isDropTarget = dragOverPlayer?.team === '블루' && dragOverPlayer?.number === lineup.number
+                {lineups.home?.map((lineup, idx) => {
+                  const isDragging = draggedPlayer?.team === 'home' && draggedPlayer?.number === lineup.number
+                  const isDropTarget = dragOverPlayer?.team === 'home' && dragOverPlayer?.number === lineup.number
                   const canDrag = canSwapLineup && !swapModePlayer
-                  const isSwapSource = swapModePlayer?.team === '블루' && swapModePlayer?.number === lineup.number
-                  const isSwapTarget = swapModePlayer && swapModePlayer.team !== '블루' || (swapModePlayer && swapModePlayer.number !== lineup.number)
+                  const isSwapSource = swapModePlayer?.team === 'home' && swapModePlayer?.number === lineup.number
+                  const isSwapTarget = swapModePlayer && swapModePlayer.team !== 'home' || (swapModePlayer && swapModePlayer.number !== lineup.number)
 
                   return (
                     <div
                       key={lineup.id || `blue-${lineup.number}`}
                       draggable={canDrag}
-                      onDragStart={(e) => canDrag && handleDragStart(e, '블루', lineup.number, lineup.member)}
-                      onDragOver={(e) => canDrag && handleDragOver(e, '블루', lineup.number)}
+                      onDragStart={(e) => canDrag && handleDragStart(e, 'home', lineup.number, lineup.member)}
+                      onDragOver={(e) => canDrag && handleDragOver(e, 'home', lineup.number)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => canDrag && handleDrop(e, '블루', lineup.number)}
+                      onDrop={(e) => canDrag && handleDrop(e, 'home', lineup.number)}
                       onDragEnd={handleDragEnd}
                       className={`
                         flex items-center justify-between p-3 rounded-lg border transition-all
@@ -431,7 +432,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
-                              const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                              const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 handleCancelSwapMode()
                               } else if (!swapModePlayer) {
@@ -444,7 +445,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             className={`
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${(() => {
-                                const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                                const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                                 if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                   return 'bg-orange-500 text-white hover:bg-orange-600'
                                 } else if (swapModePlayer && swapModePlayer.team === team) {
@@ -458,7 +459,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                               ${hasOngoingQuarter ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             title={(() => {
-                              const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                              const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 return '취소'
                               } else if (swapModePlayer) {
@@ -469,7 +470,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             })()}
                           >
                             {(() => {
-                              const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                              const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 return '🔙 취소'
                               } else {
@@ -503,24 +504,24 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 })}
 
                 {/* 마지막 빈칸 드롭존 - 다른 팀에서 이동하거나, 같은 팀에 2명 이상일 때만 표시 */}
-                {canSwapLineup && !swapModePlayer && draggedPlayer && (draggedPlayer.team !== '블루' || lineups.블루?.length >= 2) && (
+                {canSwapLineup && !swapModePlayer && draggedPlayer && (draggedPlayer.team !== 'home' || lineups.home?.length >= 2) && (
                   <div
                     onDragOver={(e) => {
-                      const nextNumber = lineups.블루?.length > 0
-                        ? Math.max(...lineups.블루.map(l => l.number)) + 1
+                      const nextNumber = lineups.home?.length > 0
+                        ? Math.max(...lineups.home.map(l => l.number)) + 1
                         : 1
-                      handleDragOver(e, '블루', nextNumber)
+                      handleDragOver(e, 'home', nextNumber)
                     }}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => {
-                      const nextNumber = lineups.블루?.length > 0
-                        ? Math.max(...lineups.블루.map(l => l.number)) + 1
+                      const nextNumber = lineups.home?.length > 0
+                        ? Math.max(...lineups.home.map(l => l.number)) + 1
                         : 1
-                      handleDrop(e, '블루', nextNumber)
+                      handleDrop(e, 'home', nextNumber)
                     }}
                     className={`
                       p-6 rounded-lg border-2 border-dashed transition-all
-                      ${dragOverPlayer?.team === '블루' && dragOverPlayer?.number === (lineups.블루?.length > 0 ? Math.max(...lineups.블루.map(l => l.number)) + 1 : 1) ? 'border-blue-500 bg-blue-100' : 'border-blue-300 bg-blue-50/30'}
+                      ${dragOverPlayer?.team === 'home' && dragOverPlayer?.number === (lineups.home?.length > 0 ? Math.max(...lineups.home.map(l => l.number)) + 1 : 1) ? 'border-blue-500 bg-blue-100' : 'border-blue-300 bg-blue-50/30'}
                       hover:border-blue-400 hover:bg-blue-50
                     `}
                   >
@@ -533,10 +534,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 {canSwapLineup && swapModePlayer && (
                   <div
                     onClick={() => {
-                      const nextNumber = lineups.블루?.length > 0
-                        ? Math.max(...lineups.블루.map(l => l.number)) + 1
+                      const nextNumber = lineups.home?.length > 0
+                        ? Math.max(...lineups.home.map(l => l.number)) + 1
                         : 1
-                      handleSwapWithPlayer('블루', nextNumber)
+                      handleSwapWithPlayer('home', nextNumber)
                     }}
                     className="p-6 rounded-lg border-2 border-dashed border-blue-400 bg-blue-50 hover:bg-blue-100 cursor-pointer transition-all"
                   >
@@ -555,7 +556,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 bg-gray-400 rounded border border-gray-600"></div>
             <h3 className="text-lg font-semibold">{awayTeamName}</h3>
-            <span className="badge badge-white">{lineups.화이트?.length || 0}명</span>
+            <span className="badge badge-white">{lineups.away?.length || 0}명</span>
             {canSwapLineup && (
               <span className="text-xs text-gray-500 ml-2">
                 {hasOngoingQuarter ? '⏸️ 쿼터 진행중' : '✨ 드래그하여 순번 변경'}
@@ -564,23 +565,23 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
           </div>
 
           <div className="space-y-2">
-            {lineups.화이트?.length === 0 ? (
+            {lineups.away?.length === 0 ? (
               <div
                 onDragOver={(e) => {
                   if (!canSwapLineup) return
                   // 빈 팀에 드롭할 때는 다음 번호 (현재 선수 수 + 1)
-                  const nextNumber = (lineups.화이트?.length || 0) + 1
-                  handleDragOver(e, '화이트', nextNumber)
+                  const nextNumber = (lineups.away?.length || 0) + 1
+                  handleDragOver(e, 'away', nextNumber)
                 }}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => {
                   if (!canSwapLineup) return
-                  const nextNumber = (lineups.화이트?.length || 0) + 1
-                  handleDrop(e, '화이트', nextNumber)
+                  const nextNumber = (lineups.away?.length || 0) + 1
+                  handleDrop(e, 'away', nextNumber)
                 }}
                 className={`
                   p-8 rounded-lg border-2 border-dashed transition-all
-                  ${dragOverPlayer?.team === '화이트' ? 'border-gray-700 bg-gray-200' : 'border-gray-300 bg-gray-50'}
+                  ${dragOverPlayer?.team === 'away' ? 'border-gray-700 bg-gray-200' : 'border-gray-300 bg-gray-50'}
                   ${canSwapLineup && draggedPlayer ? 'hover:border-gray-600' : ''}
                 `}
               >
@@ -590,21 +591,21 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
               </div>
             ) : (
               <>
-                {lineups.화이트?.map((lineup, idx) => {
-                  const isDragging = draggedPlayer?.team === '화이트' && draggedPlayer?.number === lineup.number
-                  const isDropTarget = dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === lineup.number
+                {lineups.away?.map((lineup, idx) => {
+                  const isDragging = draggedPlayer?.team === 'away' && draggedPlayer?.number === lineup.number
+                  const isDropTarget = dragOverPlayer?.team === 'away' && dragOverPlayer?.number === lineup.number
                   const canDrag = canSwapLineup && !swapModePlayer
-                  const isSwapSource = swapModePlayer?.team === '화이트' && swapModePlayer?.number === lineup.number
-                  const isSwapTarget = swapModePlayer && swapModePlayer.team !== '화이트' || (swapModePlayer && swapModePlayer.number !== lineup.number)
+                  const isSwapSource = swapModePlayer?.team === 'away' && swapModePlayer?.number === lineup.number
+                  const isSwapTarget = swapModePlayer && swapModePlayer.team !== 'away' || (swapModePlayer && swapModePlayer.number !== lineup.number)
 
                   return (
                     <div
                       key={lineup.id || `white-${lineup.number}`}
                       draggable={canDrag}
-                      onDragStart={(e) => canDrag && handleDragStart(e, '화이트', lineup.number, lineup.member)}
-                      onDragOver={(e) => canDrag && handleDragOver(e, '화이트', lineup.number)}
+                      onDragStart={(e) => canDrag && handleDragStart(e, 'away', lineup.number, lineup.member)}
+                      onDragOver={(e) => canDrag && handleDragOver(e, 'away', lineup.number)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => canDrag && handleDrop(e, '화이트', lineup.number)}
+                      onDrop={(e) => canDrag && handleDrop(e, 'away', lineup.number)}
                       onDragEnd={handleDragEnd}
                       className={`
                         flex items-center justify-between p-3 rounded-lg border transition-all
@@ -640,7 +641,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
-                              const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                              const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 handleCancelSwapMode()
                               } else if (!swapModePlayer) {
@@ -653,7 +654,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             className={`
                               px-3 py-1.5 rounded-full text-xs font-semibold transition-all
                               ${(() => {
-                                const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                                const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                                 if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                   return 'bg-orange-500 text-white hover:bg-orange-600'
                                 } else if (swapModePlayer && swapModePlayer.team === team) {
@@ -667,7 +668,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                               ${hasOngoingQuarter ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             title={(() => {
-                              const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                              const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 return '취소'
                               } else if (swapModePlayer) {
@@ -678,7 +679,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                             })()}
                           >
                             {(() => {
-                              const team = lineup.team || (lineups.블루?.find(l => l.number === lineup.number) ? '블루' : '화이트')
+                              const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
                               if (swapModePlayer?.team === team && swapModePlayer?.number === lineup.number) {
                                 return '🔙 취소'
                               } else {
@@ -712,24 +713,24 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 })}
 
                 {/* 마지막 빈칸 드롭존 - 다른 팀에서 이동하거나, 같은 팀에 2명 이상일 때만 표시 */}
-                {canSwapLineup && !swapModePlayer && draggedPlayer && (draggedPlayer.team !== '화이트' || lineups.화이트?.length >= 2) && (
+                {canSwapLineup && !swapModePlayer && draggedPlayer && (draggedPlayer.team !== 'away' || lineups.away?.length >= 2) && (
                   <div
                     onDragOver={(e) => {
-                      const nextNumber = lineups.화이트?.length > 0
-                        ? Math.max(...lineups.화이트.map(l => l.number)) + 1
+                      const nextNumber = lineups.away?.length > 0
+                        ? Math.max(...lineups.away.map(l => l.number)) + 1
                         : 1
-                      handleDragOver(e, '화이트', nextNumber)
+                      handleDragOver(e, 'away', nextNumber)
                     }}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => {
-                      const nextNumber = lineups.화이트?.length > 0
-                        ? Math.max(...lineups.화이트.map(l => l.number)) + 1
+                      const nextNumber = lineups.away?.length > 0
+                        ? Math.max(...lineups.away.map(l => l.number)) + 1
                         : 1
-                      handleDrop(e, '화이트', nextNumber)
+                      handleDrop(e, 'away', nextNumber)
                     }}
                     className={`
                       p-6 rounded-lg border-2 border-dashed transition-all
-                      ${dragOverPlayer?.team === '화이트' && dragOverPlayer?.number === (lineups.화이트?.length > 0 ? Math.max(...lineups.화이트.map(l => l.number)) + 1 : 1) ? 'border-gray-700 bg-gray-200' : 'border-gray-400 bg-gray-50/30'}
+                      ${dragOverPlayer?.team === 'away' && dragOverPlayer?.number === (lineups.away?.length > 0 ? Math.max(...lineups.away.map(l => l.number)) + 1 : 1) ? 'border-gray-700 bg-gray-200' : 'border-gray-400 bg-gray-50/30'}
                       hover:border-gray-600 hover:bg-gray-100
                     `}
                   >
@@ -742,10 +743,10 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                 {canSwapLineup && swapModePlayer && (
                   <div
                     onClick={() => {
-                      const nextNumber = lineups.화이트?.length > 0
-                        ? Math.max(...lineups.화이트.map(l => l.number)) + 1
+                      const nextNumber = lineups.away?.length > 0
+                        ? Math.max(...lineups.away.map(l => l.number)) + 1
                         : 1
-                      handleSwapWithPlayer('화이트', nextNumber)
+                      handleSwapWithPlayer('away', nextNumber)
                     }}
                     className="p-6 rounded-lg border-2 border-dashed border-gray-400 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all"
                   >

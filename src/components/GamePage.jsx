@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 export default function GamePage() {
   const { gameId } = useParams()
   const [game, setGame] = useState(null)
-  const [lineups, setLineups] = useState({ 블루: [], 화이트: [] })
+  const [lineups, setLineups] = useState({ home: [], away: [] })
   const [quarters, setQuarters] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

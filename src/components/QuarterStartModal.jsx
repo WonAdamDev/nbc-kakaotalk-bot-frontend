@@ -22,29 +22,29 @@ export default function QuarterStartModal({
   // 초기화: playing_status에 따라 출전/벤치 자동 배치
   useEffect(() => {
     if (preview && lineups) {
-      // 블루팀
-      const blueLineups = lineups.블루 || []
-      const bluePlayingPlayers = blueLineups
+      // home팀
+      const homeLineups = lineups.home || []
+      const homePlayingPlayers = homeLineups
         .filter(l => (l.playing_status || 'playing') === 'playing')
         .map(l => l.number)
-      const blueBenchPlayers = blueLineups
+      const homeBenchPlayers = homeLineups
         .filter(l => (l.playing_status || 'playing') === 'bench')
         .map(l => l.number)
 
-      setPlayingBlue(bluePlayingPlayers)
-      setBenchBlue(blueBenchPlayers)
+      setPlayingBlue(homePlayingPlayers)
+      setBenchBlue(homeBenchPlayers)
 
-      // 화이트팀
-      const whiteLineups = lineups.화이트 || []
-      const whitePlayingPlayers = whiteLineups
+      // away팀
+      const awayLineups = lineups.away || []
+      const awayPlayingPlayers = awayLineups
         .filter(l => (l.playing_status || 'playing') === 'playing')
         .map(l => l.number)
-      const whiteBenchPlayers = whiteLineups
+      const awayBenchPlayers = awayLineups
         .filter(l => (l.playing_status || 'playing') === 'bench')
         .map(l => l.number)
 
-      setPlayingWhite(whitePlayingPlayers)
-      setBenchWhite(whiteBenchPlayers)
+      setPlayingWhite(awayPlayingPlayers)
+      setBenchWhite(awayBenchPlayers)
     }
   }, [preview, lineups])
 
@@ -52,13 +52,13 @@ export default function QuarterStartModal({
 
   // 선수 번호로 이름 찾기 (동명이인 있으면 ID 표시)
   const getMemberName = (team, number) => {
-    const teamKey = team === 'blue' ? '블루' : '화이트'
+    const teamKey = team === 'blue' ? 'home' : 'away'
     const lineup = lineups?.[teamKey]?.find(l => l.number === number)
 
     if (!lineup) return `#${number}`
 
     // 전체 라인업에서 동명이인 확인
-    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    const allLineups = [...(lineups?.home || []), ...(lineups?.away || [])]
     const duplicateNames = allLineups.filter(l => l.member === lineup.member)
     const hasDuplicate = duplicateNames.length > 1
 

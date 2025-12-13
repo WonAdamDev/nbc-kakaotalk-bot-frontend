@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lineups }) {
   const [mode, setMode] = useState('preset') // 'preset' 또는 'guest'
-  const [selectedTeam, setSelectedTeam] = useState('블루')
+  const [selectedTeam, setSelectedTeam] = useState('home')
   const [selectedMembers, setSelectedMembers] = useState([]) // [{name, member_id, team_id}]
   const [guestName, setGuestName] = useState('')
   const [guestList, setGuestList] = useState([]) // 추가된 게스트 목록
@@ -82,7 +82,7 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lin
   // 멤버가 이미 라인업에 있는지 확인
   const isMemberInLineup = (memberId) => {
     if (!lineups) return false
-    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    const allLineups = [...(lineups?.home || []), ...(lineups?.away || [])]
     return allLineups.some(lineup => lineup.member_id === memberId)
   }
 
@@ -198,8 +198,8 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lin
             onChange={(e) => setSelectedTeam(e.target.value)}
             className="input w-full"
           >
-            <option value="블루">HOME</option>
-            <option value="화이트">AWAY</option>
+            <option value="home">HOME</option>
+            <option value="away">AWAY</option>
           </select>
         </div>
 

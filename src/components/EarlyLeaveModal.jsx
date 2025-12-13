@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { formatTimeKST } from '../utils/timeUtils'
 
 export default function EarlyLeaveModal({ isOpen, onClose, lineups, onSelectPlayer, gameStatus }) {
-  const [selectedTeam, setSelectedTeam] = useState('블루')
+  const [selectedTeam, setSelectedTeam] = useState('home')
 
   if (!isOpen) return null
 
@@ -24,24 +24,24 @@ export default function EarlyLeaveModal({ isOpen, onClose, lineups, onSelectPlay
         {/* 팀 선택 탭 */}
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => setSelectedTeam('블루')}
+            onClick={() => setSelectedTeam('home')}
             className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors ${
-              selectedTeam === '블루'
+              selectedTeam === 'home'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            HOME ({lineups.블루?.length || 0}명)
+            HOME ({lineups.home?.length || 0}명)
           </button>
           <button
-            onClick={() => setSelectedTeam('화이트')}
+            onClick={() => setSelectedTeam('away')}
             className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors ${
-              selectedTeam === '화이트'
+              selectedTeam === 'away'
                 ? 'bg-gray-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            AWAY ({lineups.화이트?.length || 0}명)
+            AWAY ({lineups.away?.length || 0}명)
           </button>
         </div>
 
@@ -58,14 +58,14 @@ export default function EarlyLeaveModal({ isOpen, onClose, lineups, onSelectPlay
                 className={`
                   flex items-center justify-between p-3 rounded-lg border cursor-pointer
                   transition-all hover:shadow-md
-                  ${selectedTeam === '블루' ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' : 'bg-gray-50 border-gray-300 hover:bg-gray-100'}
+                  ${selectedTeam === 'home' ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' : 'bg-gray-50 border-gray-300 hover:bg-gray-100'}
                 `}
                 onClick={() => onSelectPlayer(lineup.id, lineup.member)}
               >
                 <div className="flex items-center gap-4">
                   <div className={`
                     flex items-center justify-center w-12 h-12 rounded-lg font-bold text-lg text-white
-                    ${selectedTeam === '블루' ? 'bg-blue-600' : 'bg-gray-600'}
+                    ${selectedTeam === 'home' ? 'bg-blue-600' : 'bg-gray-600'}
                   `}>
                     {lineup.number}
                   </div>
