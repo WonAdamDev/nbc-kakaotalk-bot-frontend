@@ -398,11 +398,17 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => canDrag && handleDrop(e, 'home', lineup.number)}
                       onDragEnd={handleDragEnd}
+                      onClick={() => {
+                        if (swapModePlayer && !isSwapSource) {
+                          const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
+                          handleSwapWithPlayer(team, lineup.number)
+                        }
+                      }}
                       className={`
                         flex items-center justify-between p-3 rounded-lg border transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
                         ${isDropTarget ? 'border-blue-500 border-2 bg-blue-100' : 'bg-blue-50 border-blue-200'}
-                        ${canDrag ? 'cursor-move hover:shadow-md' : ''}
+                        ${canDrag && !swapModePlayer ? 'cursor-move hover:shadow-md' : ''}
                         ${isSwapSource ? 'ring-2 ring-orange-500 bg-orange-50' : ''}
                         ${isSwapTarget && swapModePlayer ? 'cursor-pointer hover:ring-2 hover:ring-blue-400' : ''}
                       `}
@@ -607,11 +613,17 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => canDrag && handleDrop(e, 'away', lineup.number)}
                       onDragEnd={handleDragEnd}
+                      onClick={() => {
+                        if (swapModePlayer && !isSwapSource) {
+                          const team = lineup.team || (lineups.home?.find(l => l.number === lineup.number) ? 'home' : 'away')
+                          handleSwapWithPlayer(team, lineup.number)
+                        }
+                      }}
                       className={`
                         flex items-center justify-between p-3 rounded-lg border transition-all
                         ${isDragging ? 'opacity-50 scale-95' : ''}
                         ${isDropTarget ? 'border-gray-700 border-2 bg-gray-200' : 'bg-gray-50 border-gray-300'}
-                        ${canDrag ? 'cursor-move hover:shadow-md' : ''}
+                        ${canDrag && !swapModePlayer ? 'cursor-move hover:shadow-md' : ''}
                         ${isSwapSource ? 'ring-2 ring-orange-500 bg-orange-50' : ''}
                         ${isSwapTarget && swapModePlayer ? 'cursor-pointer hover:ring-2 hover:ring-gray-400' : ''}
                       `}
