@@ -19,13 +19,21 @@ export default function RoomPage() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   // 방 정보 및 경기 목록 로드
   const loadRoomData = async (page = 1) => {
     try {
       setLoading(true)
+      const params = { page, limit: 10 }
+
+      // 날짜 필터링 파라미터 추가
+      if (fromDate) params.from_date = fromDate
+      if (toDate) params.to_date = toDate
+
       const response = await axios.get(`${API_URL}/api/room/${roomId}/games`, {
-        params: { page, limit: 10 }
+        params
       })
 
       if (response.data.success) {
@@ -56,6 +64,17 @@ export default function RoomPage() {
     loadRoomData(newPage)
   }
 
+  const handleFilterApply = () => {
+    loadRoomData(1) // 필터 적용 시 첫 페이지로
+  }
+
+  const handleFilterReset = () => {
+    setFromDate('')
+    setToDate('')
+    // 상태 초기화 후 데이터 다시 로드
+    setTimeout(() => loadRoomData(1), 0)
+  }
+
   if (loading && !room) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -82,6 +101,62 @@ export default function RoomPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">{room?.name}</h1>
         <p className="text-gray-600">방 ID: {roomId}</p>
+      </div>
+
+      {/* 날짜 필터 */}
+      <div className="card mb-6">
+        <h3 className="text-lg font-semibold mb-4">날짜 필터</h3>
+        <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              시작 날짜
+            </label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              종료 날짜
+            </label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleFilterApply}
+              disabled={loading}
+              className="btn btn-primary"
+            >
+              적용
+            </button>
+            <button
+              onClick={handleFilterReset}
+              disabled={loading}
+              className="btn btn-secondary"
+            >
+              초기화
+            </button>
+          </div>
+        </div>
+        {(fromDate || toDate) && (
+          <div className="mt-3 text-sm text-gray-600">
+            {fromDate && toDate ? (
+              <span>📅 {fromDate} ~ {toDate}</span>
+            ) : fromDate ? (
+              <span>📅 {fromDate} 이후</span>
+            ) : (
+              <span>📅 {toDate} 이전</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 경기 목록 */}
