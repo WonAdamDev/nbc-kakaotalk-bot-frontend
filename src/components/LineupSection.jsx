@@ -358,7 +358,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-lg">
                             {lineup.member}
-                            {hasDuplicateName(lineup.member) && lineup.member_id && (
+                            {lineup.member_id && (
                               <span className="text-xs text-gray-500 ml-2">
                                 #{lineup.member_id.slice(-4)}
                               </span>
@@ -495,7 +495,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-lg">
                             {lineup.member}
-                            {hasDuplicateName(lineup.member) && lineup.member_id && (
+                            {lineup.member_id && (
                               <span className="text-xs text-gray-500 ml-2">
                                 #{lineup.member_id.slice(-4)}
                               </span>
