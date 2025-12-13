@@ -58,12 +58,14 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   // 팀 선택 가능 여부 (경기 시작 전에만)
   const canSelectTeam = gameStatus === '준비중'
 
-  const handleArrival = async (team, member) => {
+  const handleArrival = async (team, member, member_id, team_id) => {
     try {
       setLoading(true)
       await axios.post(`${API_URL}/api/game/${gameId}/lineup/arrival`, {
         team: team,
-        member: member
+        member: member,
+        member_id: member_id,  // Optional - 프리셋 멤버인 경우만
+        team_id: team_id        // Optional - 멤버의 팀 ID
       })
       // WebSocket이 자동으로 업데이트하므로 onUpdate() 호출 불필요
     } catch (err) {
@@ -347,7 +349,17 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                           {lineup.number}
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
+                          <p className="font-semibold text-gray-900 text-lg">
+                            {lineup.member}
+                            {lineup.member_id && (
+                              <span className="text-xs text-gray-500 ml-2">
+                                #{lineup.member_id.slice(-4)}
+                              </span>
+                            )}
+                            {lineup.is_guest && (
+                              <span className="text-xs text-orange-500 ml-1">(게스트)</span>
+                            )}
+                          </p>
                           <p className="text-xs text-gray-500">
                             {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
                           </p>
@@ -474,7 +486,17 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                           {lineup.number}
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-gray-900 text-lg">{lineup.member}</p>
+                          <p className="font-semibold text-gray-900 text-lg">
+                            {lineup.member}
+                            {lineup.member_id && (
+                              <span className="text-xs text-gray-500 ml-2">
+                                #{lineup.member_id.slice(-4)}
+                              </span>
+                            )}
+                            {lineup.is_guest && (
+                              <span className="text-xs text-orange-500 ml-1">(게스트)</span>
+                            )}
+                          </p>
                           <p className="text-xs text-gray-500">
                             {new Date(lineup.arrived_at).toLocaleTimeString('ko-KR')}
                           </p>
