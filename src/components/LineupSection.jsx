@@ -410,7 +410,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         ${isDropTarget ? 'border-blue-500 border-2 bg-blue-100' : 'bg-blue-50 border-blue-200'}
                         ${canDrag && !swapModePlayer ? 'cursor-move hover:shadow-md' : ''}
                         ${isSwapSource ? 'ring-2 ring-orange-500 bg-orange-50' : ''}
-                        ${isSwapTarget && swapModePlayer ? 'cursor-pointer hover:ring-2 hover:ring-blue-400' : ''}
+                        ${isSwapTarget && swapModePlayer ? 'cursor-pointer hover:ring-2 hover:ring-blue-500 hover:bg-blue-100 hover:scale-[1.02]' : ''}
                       `}
                     >
                       <div className="flex items-center gap-4 flex-1">
@@ -623,7 +623,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         ${isDropTarget ? 'border-gray-700 border-2 bg-gray-200' : 'bg-gray-50 border-gray-300'}
                         ${canDrag && !swapModePlayer ? 'cursor-move hover:shadow-md' : ''}
                         ${isSwapSource ? 'ring-2 ring-orange-500 bg-orange-50' : ''}
-                        ${isSwapTarget && swapModePlayer ? 'cursor-pointer hover:ring-2 hover:ring-gray-400' : ''}
+                        ${isSwapTarget && swapModePlayer ? 'cursor-pointer hover:ring-2 hover:ring-gray-500 hover:bg-gray-200 hover:scale-[1.02]' : ''}
                       `}
                     >
                       <div className="flex items-center gap-4 flex-1">
