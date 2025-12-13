@@ -58,6 +58,13 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
   // 팀 선택 가능 여부 (경기 시작 전에만)
   const canSelectTeam = gameStatus === '준비중'
 
+  // 동명이인 확인 헬퍼 함수
+  const hasDuplicateName = (memberName) => {
+    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    const duplicates = allLineups.filter(l => l.member === memberName)
+    return duplicates.length > 1
+  }
+
   const handleArrival = async (team, member, member_id, team_id) => {
     try {
       setLoading(true)
@@ -351,7 +358,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-lg">
                             {lineup.member}
-                            {lineup.member_id && (
+                            {hasDuplicateName(lineup.member) && lineup.member_id && (
                               <span className="text-xs text-gray-500 ml-2">
                                 #{lineup.member_id.slice(-4)}
                               </span>
@@ -488,7 +495,7 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-lg">
                             {lineup.member}
-                            {lineup.member_id && (
+                            {hasDuplicateName(lineup.member) && lineup.member_id && (
                               <span className="text-xs text-gray-500 ml-2">
                                 #{lineup.member_id.slice(-4)}
                               </span>

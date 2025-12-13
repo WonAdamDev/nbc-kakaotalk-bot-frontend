@@ -117,28 +117,55 @@ export default function QuarterSection({ gameId, game, quarters, lineups, onUpda
     }))
   }
 
-  // 선수 번호로 이름 찾기 (쿼터 스냅샷 우선)
+  // 선수 번호로 이름 찾기 (쿼터 스냅샷 우선, 동명이인 있으면 ID 표시)
   const getMemberName = (team, number, quarter) => {
+    let memberName = null
+    let memberId = null
+
     // 쿼터에 스냅샷이 있으면 스냅샷에서 찾기 (과거 쿼터 보호)
     if (quarter?.lineup_snapshot && quarter.lineup_snapshot[team]) {
-      // JSON 변환 시 키가 문자열이 되므로 String(number)로 조회
-      const name = quarter.lineup_snapshot[team][String(number)]
-      if (name) {
-        console.log(`[Snapshot] Q${quarter.quarter} ${team} #${number}: ${name}`)
-        return name
+      const snapshot = quarter.lineup_snapshot[team][String(number)]
+      if (snapshot) {
+        // 새 구조: {name, member_id, is_guest}
+        if (typeof snapshot === 'object') {
+          memberName = snapshot.name
+          memberId = snapshot.member_id
+          console.log(`[Snapshot] Q${quarter.quarter} ${team} #${number}: ${memberName} (ID: ${memberId})`)
+        } else {
+          // 구 구조 (하위 호환): 문자열
+          memberName = snapshot
+          console.log(`[Snapshot Legacy] Q${quarter.quarter} ${team} #${number}: ${memberName}`)
+        }
       }
     } else {
       console.log(`[No Snapshot] Q${quarter?.quarter} - Using current lineup for ${team} #${number}`)
     }
 
     // 스냅샷이 없거나 해당 번호가 없으면 현재 라인업에서 찾기
-    const lineup = lineups[team]?.find(l => l.number === number)
-    if (lineup) {
-      return lineup.member
+    if (!memberName) {
+      const lineup = lineups[team]?.find(l => l.number === number)
+      if (lineup) {
+        memberName = lineup.member
+        memberId = lineup.member_id
+      }
     }
 
     // 둘 다 없으면 번호만 표시
-    return `#${number}`
+    if (!memberName) {
+      return `#${number}`
+    }
+
+    // 동명이인 확인 (현재 라인업 기준)
+    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    const duplicateNames = allLineups.filter(l => l.member === memberName)
+    const hasDuplicate = duplicateNames.length > 1
+
+    // 동명이인이 있고 member_id가 있으면 ID 표시
+    if (hasDuplicate && memberId) {
+      return `${memberName} #${memberId.slice(-4)}`
+    }
+
+    return memberName
   }
 
   return (

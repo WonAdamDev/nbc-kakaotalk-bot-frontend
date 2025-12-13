@@ -50,11 +50,24 @@ export default function QuarterStartModal({
 
   if (!isOpen || !preview) return null
 
-  // 선수 번호로 이름 찾기
+  // 선수 번호로 이름 찾기 (동명이인 있으면 ID 표시)
   const getMemberName = (team, number) => {
     const teamKey = team === 'blue' ? '블루' : '화이트'
     const lineup = lineups?.[teamKey]?.find(l => l.number === number)
-    return lineup ? lineup.member : `#${number}`
+
+    if (!lineup) return `#${number}`
+
+    // 전체 라인업에서 동명이인 확인
+    const allLineups = [...(lineups?.블루 || []), ...(lineups?.화이트 || [])]
+    const duplicateNames = allLineups.filter(l => l.member === lineup.member)
+    const hasDuplicate = duplicateNames.length > 1
+
+    // 동명이인이 있거나 member_id가 있으면 ID 표시
+    if (hasDuplicate && lineup.member_id) {
+      return `${lineup.member} #${lineup.member_id.slice(-4)}`
+    }
+
+    return lineup.member
   }
 
   // 이대로 시작
