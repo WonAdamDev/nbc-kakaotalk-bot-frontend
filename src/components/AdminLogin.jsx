@@ -6,10 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  })
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -19,7 +16,7 @@ export default function AdminLogin() {
     setLoading(true)
 
     try {
-      const response = await axios.post(`${API_URL}/api/admin/login`, formData)
+      const response = await axios.post(`${API_URL}/api/admin/login`, { password })
 
       if (response.data.success) {
         // JWT 토큰을 localStorage에 저장
@@ -34,13 +31,6 @@ export default function AdminLogin() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
   }
 
   return (
@@ -72,34 +62,19 @@ export default function AdminLogin() {
             )}
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-                아이디
-              </label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
-                placeholder="관리자 아이디를 입력하세요"
-              />
-            </div>
-
-            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                비밀번호
+                관리자 비밀번호
               </label>
               <input
                 type="password"
                 id="password"
                 name="password"
-                value={formData.password}
-                onChange={handleChange}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
                 placeholder="비밀번호를 입력하세요"
+                autoFocus
               />
             </div>
 
@@ -118,7 +93,7 @@ export default function AdminLogin() {
 
           <div className="mt-6 pt-6 border-t border-gray-700">
             <p className="text-sm text-gray-400 text-center">
-              관리자 계정이 없으신가요?
+              비밀번호를 모르시나요?
               <br />
               시스템 관리자에게 문의하세요.
             </p>
