@@ -27,7 +27,13 @@ export default function AdminLogin() {
       }
     } catch (err) {
       console.error('Login error:', err)
-      setError(err.response?.data?.message || '로그인에 실패했습니다.')
+      const message = err.response?.data?.message || '로그인에 실패했습니다.'
+      setError(message)
+
+      // 429 에러 (로그인 차단)인 경우 비밀번호 입력란 비활성화
+      if (err.response?.status === 429) {
+        setPassword('')
+      }
     } finally {
       setLoading(false)
     }
@@ -58,6 +64,14 @@ export default function AdminLogin() {
             {error && (
               <div className="bg-red-500/10 border border-red-500 rounded-lg p-4">
                 <p className="text-red-500 text-sm">{error}</p>
+              </div>
+            )}
+
+            {error && !error.includes('입력해주세요') && (
+              <div className="bg-yellow-500/10 border border-yellow-500 rounded-lg p-4">
+                <p className="text-yellow-500 text-sm">
+                  ⚠️ 최대 5회 실패 시 15분간 로그인이 차단됩니다.
+                </p>
               </div>
             )}
 
