@@ -156,13 +156,10 @@ export default function AdminDashboard() {
     if (!confirm(`${memberName} 멤버를 삭제하시겠습니까?`)) return
 
     try {
-      const response = await axios.delete(
-        `${API_URL}/api/commands/member`,
-        {
-          data: { room: selectedRoom, member: memberName, member_id: memberId },
-          ...getAxiosConfig()
-        }
-      )
+      const config = getAxiosConfig()
+      config.data = { room: selectedRoom, member: memberName, member_id: memberId }
+
+      const response = await axios.delete(`${API_URL}/api/commands/member`, config)
 
       if (response.data.success) {
         alert('멤버가 삭제되었습니다.')
@@ -200,13 +197,10 @@ export default function AdminDashboard() {
     if (!confirm(`${teamName} 팀을 삭제하시겠습니까?`)) return
 
     try {
-      const response = await axios.delete(
-        `${API_URL}/api/commands/team`,
-        {
-          data: { room: selectedRoom, team: teamName },
-          ...getAxiosConfig()
-        }
-      )
+      const config = getAxiosConfig()
+      config.data = { room: selectedRoom, team: teamName }
+
+      const response = await axios.delete(`${API_URL}/api/commands/team`, config)
 
       if (response.data.success) {
         alert('팀이 삭제되었습니다.')
@@ -224,6 +218,11 @@ export default function AdminDashboard() {
 
     const member = members.find(m => m.member_id === assignForm.memberId)
     const team = teams.find(t => t.team_id === assignForm.teamId)
+
+    if (!member || !team) {
+      alert('멤버 또는 팀을 찾을 수 없습니다.')
+      return
+    }
 
     try {
       const response = await axios.post(
@@ -252,13 +251,10 @@ export default function AdminDashboard() {
     if (!confirm(`${memberName}의 팀 배정을 해제하시겠습니까?`)) return
 
     try {
-      const response = await axios.delete(
-        `${API_URL}/api/commands/member_team`,
-        {
-          data: { room: selectedRoom, member: memberName, member_id: memberId },
-          ...getAxiosConfig()
-        }
-      )
+      const config = getAxiosConfig()
+      config.data = { room: selectedRoom, member: memberName, member_id: memberId }
+
+      const response = await axios.delete(`${API_URL}/api/commands/member_team`, config)
 
       if (response.data.success) {
         alert('팀 배정이 해제되었습니다.')
