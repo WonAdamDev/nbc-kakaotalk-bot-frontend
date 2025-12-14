@@ -20,11 +20,30 @@ export default function AdminDashboard() {
   const [gameForm, setGameForm] = useState({ creator: '', date: '' })
   const [assignForm, setAssignForm] = useState({ memberId: '', teamId: '' })
 
-  // 인증 확인
+  // 인증 확인 및 axios 인터셉터 설정
   useEffect(() => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
       navigate('/admin/login')
+      return
+    }
+
+    // axios 응답 인터셉터 설정 (401 에러 시 로그인 페이지로 리다이렉트)
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          console.warn('[AUTH] 인증 실패 - 로그인 페이지로 이동')
+          localStorage.removeItem('admin_token')
+          navigate('/admin/login')
+        }
+        return Promise.reject(error)
+      }
+    )
+
+    // cleanup: 컴포넌트 언마운트 시 인터셉터 제거
+    return () => {
+      axios.interceptors.response.eject(interceptor)
     }
   }, [navigate])
 
@@ -45,6 +64,17 @@ export default function AdminDashboard() {
         'Authorization': `Bearer ${token}`
       }
     }
+  }
+
+  // 공통 에러 핸들러
+  const handleApiError = (err, defaultMessage) => {
+    // 401 에러는 인터셉터가 처리하므로 무시
+    if (err.response?.status === 401) {
+      return
+    }
+
+    const message = err.response?.data?.message || err.response?.data?.error || err.message
+    alert(`${defaultMessage}: ${message}`)
   }
 
   // 로그아웃
@@ -156,7 +186,7 @@ export default function AdminDashboard() {
         loadMembers()
       }
     } catch (err) {
-      alert('멤버 생성 실패: ' + (err.response?.data?.message || err.message))
+      handleApiError(err, '멤버 생성 실패')
     }
   }
 
@@ -175,7 +205,7 @@ export default function AdminDashboard() {
         loadMembers()
       }
     } catch (err) {
-      alert('멤버 삭제 실패: ' + (err.response?.data?.message || err.message))
+      handleApiError(err, '멤버 삭제 실패')
     }
   }
 
@@ -265,6 +295,11 @@ export default function AdminDashboard() {
         loadMembers()
       }
     } catch (err) {
+      // 401 에러는 인터셉터가 처리하므로 여기서는 무시
+      if (err.response?.status === 401) {
+        return
+      }
+
       console.error('[팀 배정] 에러 상세:', err)
       console.error('[팀 배정] 에러 응답:', err.response)
 
