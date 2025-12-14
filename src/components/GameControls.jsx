@@ -85,21 +85,6 @@ export default function GameControls({ game, gameId, onUpdate, teamHome, teamAwa
     }
   }
 
-  const handleDeleteGame = async () => {
-    if (!confirm('정말로 경기를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
-    if (!confirm('모든 라인업과 쿼터 데이터가 함께 삭제됩니다. 계속하시겠습니까?')) return
-
-    try {
-      setLoading(true)
-      await axios.delete(`${API_URL}/api/game/${gameId}`)
-      alert('경기가 삭제되었습니다.')
-      // 삭제 후 리다이렉트는 별도로 처리 가능
-    } catch (err) {
-      alert('경기 삭제 실패: ' + (err.response?.data?.error || err.message))
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div className="card mb-6">
@@ -123,16 +108,6 @@ export default function GameControls({ game, gameId, onUpdate, teamHome, teamAwa
             className="btn btn-primary"
           >
             ⏹️ 경기 종료
-          </button>
-        )}
-
-        {game.status !== '종료' && (
-          <button
-            onClick={handleDeleteGame}
-            disabled={loading}
-            className="btn btn-danger"
-          >
-            🗑️ 경기 삭제
           </button>
         )}
       </div>

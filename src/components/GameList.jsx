@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function GameList() {
+  const navigate = useNavigate()
   const [games, setGames] = useState([])
   const [rooms, setRooms] = useState([])
   const [selectedRoom, setSelectedRoom] = useState('')
@@ -131,7 +132,15 @@ export default function GameList() {
       <div className="max-w-6xl mx-auto">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">경기 목록</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-white">경기 목록</h1>
+            <button
+              onClick={() => navigate('/admin/login')}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              🔐 Admin
+            </button>
+          </div>
           <div className="flex items-center justify-between">
             <p className="text-gray-400">
               전체 {pagination.total_items}개의 경기
