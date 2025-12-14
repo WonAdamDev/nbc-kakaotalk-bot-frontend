@@ -28,12 +28,21 @@ export default function AdminDashboard() {
     }
   }, [navigate])
 
-  // Axios 인터셉터 설정
+  // Axios 설정 생성
   const getAxiosConfig = () => {
     const token = localStorage.getItem('admin_token')
+    if (!token) {
+      console.warn('[AUTH] No token found in localStorage')
+      return {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    }
     return {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       }
     }
   }
@@ -214,27 +223,41 @@ export default function AdminDashboard() {
   // 팀 배정
   const handleAssignTeam = async (e) => {
     e.preventDefault()
-    if (!assignForm.memberId || !assignForm.teamId) return
+    if (!assignForm.memberId || !assignForm.teamId) {
+      alert('멤버와 팀을 모두 선택해주세요.')
+      return
+    }
 
     const member = members.find(m => m.member_id === assignForm.memberId)
     const team = teams.find(t => t.team_id === assignForm.teamId)
+
+    console.log('[팀 배정] 선택된 멤버:', member)
+    console.log('[팀 배정] 선택된 팀:', team)
 
     if (!member || !team) {
       alert('멤버 또는 팀을 찾을 수 없습니다.')
       return
     }
 
+    const requestData = {
+      room: selectedRoom,
+      member: member.name,
+      member_id: assignForm.memberId,
+      team: team.name
+    }
+
+    console.log('[팀 배정] 요청 URL:', `${API_URL}/api/commands/member_team`)
+    console.log('[팀 배정] 요청 데이터:', requestData)
+    console.log('[팀 배정] 인증 헤더:', getAxiosConfig())
+
     try {
       const response = await axios.post(
         `${API_URL}/api/commands/member_team`,
-        {
-          room: selectedRoom,
-          member: member.name,
-          member_id: assignForm.memberId,
-          team: team.name
-        },
+        requestData,
         getAxiosConfig()
       )
+
+      console.log('[팀 배정] 응답:', response.data)
 
       if (response.data.success) {
         alert('팀이 배정되었습니다.')
@@ -242,7 +265,20 @@ export default function AdminDashboard() {
         loadMembers()
       }
     } catch (err) {
-      alert('팀 배정 실패: ' + (err.response?.data?.message || err.message))
+      console.error('[팀 배정] 에러 상세:', err)
+      console.error('[팀 배정] 에러 응답:', err.response)
+
+      if (err.response) {
+        // 서버가 응답을 반환한 경우
+        alert('팀 배정 실패: ' + (err.response.data?.message || err.response.statusText))
+      } else if (err.request) {
+        // 요청이 전송되었지만 응답을 받지 못한 경우
+        alert('서버로부터 응답이 없습니다. 네트워크 연결을 확인해주세요.')
+        console.error('[팀 배정] 요청 정보:', err.request)
+      } else {
+        // 요청 설정 중 오류 발생
+        alert('요청 생성 실패: ' + err.message)
+      }
     }
   }
 
