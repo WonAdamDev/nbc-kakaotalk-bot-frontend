@@ -227,7 +227,7 @@ export default function AdminDashboard() {
         loadTeams()
       }
     } catch (err) {
-      alert('팀 생성 실패: ' + (err.response?.data?.message || err.message))
+      handleApiError(err, '팀 생성 실패')
     }
   }
 
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
         loadTeams()
       }
     } catch (err) {
-      alert('팀 삭제 실패: ' + (err.response?.data?.message || err.message))
+      handleApiError(err, '팀 삭제 실패')
     }
   }
 
@@ -295,25 +295,9 @@ export default function AdminDashboard() {
         loadMembers()
       }
     } catch (err) {
-      // 401 에러는 인터셉터가 처리하므로 여기서는 무시
-      if (err.response?.status === 401) {
-        return
-      }
-
       console.error('[팀 배정] 에러 상세:', err)
       console.error('[팀 배정] 에러 응답:', err.response)
-
-      if (err.response) {
-        // 서버가 응답을 반환한 경우
-        alert('팀 배정 실패: ' + (err.response.data?.message || err.response.statusText))
-      } else if (err.request) {
-        // 요청이 전송되었지만 응답을 받지 못한 경우
-        alert('서버로부터 응답이 없습니다. 네트워크 연결을 확인해주세요.')
-        console.error('[팀 배정] 요청 정보:', err.request)
-      } else {
-        // 요청 설정 중 오류 발생
-        alert('요청 생성 실패: ' + err.message)
-      }
+      handleApiError(err, '팀 배정 실패')
     }
   }
 
@@ -332,7 +316,7 @@ export default function AdminDashboard() {
         loadMembers()
       }
     } catch (err) {
-      alert('팀 배정 해제 실패: ' + (err.response?.data?.message || err.message))
+      handleApiError(err, '팀 배정 해제 실패')
     }
   }
 
@@ -357,7 +341,7 @@ export default function AdminDashboard() {
         loadGames()
       }
     } catch (err) {
-      alert('경기 생성 실패: ' + (err.response?.data?.error || err.message))
+      handleApiError(err, '경기 생성 실패')
     }
   }
 
@@ -370,7 +354,7 @@ export default function AdminDashboard() {
       alert('경기가 삭제되었습니다.')
       loadGames()
     } catch (err) {
-      alert('경기 삭제 실패: ' + (err.response?.data?.error || err.message))
+      handleApiError(err, '경기 삭제 실패')
     }
   }
 
@@ -496,8 +480,9 @@ export default function AdminDashboard() {
                     key={member.member_id}
                     className="flex items-center justify-between bg-gray-700 p-4 rounded-lg"
                   >
-                    <div>
+                    <div className="flex-1">
                       <p className="text-white font-medium">{member.name}</p>
+                      <p className="text-xs text-gray-500 font-mono">ID: {member.member_id}</p>
                       <p className="text-sm text-gray-400">
                         {member.team ? `팀: ${member.team}` : '팀 미배정'}
                       </p>
@@ -563,8 +548,9 @@ export default function AdminDashboard() {
                     key={team.team_id}
                     className="flex items-center justify-between bg-gray-700 p-4 rounded-lg"
                   >
-                    <div>
+                    <div className="flex-1">
                       <p className="text-white font-medium">{team.name}</p>
+                      <p className="text-xs text-gray-500 font-mono">ID: {team.team_id}</p>
                       <p className="text-sm text-gray-400">멤버 수: {team.member_count}명</p>
                     </div>
                     <button
@@ -599,7 +585,7 @@ export default function AdminDashboard() {
                   <option value="">멤버를 선택하세요</option>
                   {members.map((member) => (
                     <option key={member.member_id} value={member.member_id}>
-                      {member.name} {member.team && `(현재: ${member.team})`}
+                      {member.name} [ID: {member.member_id}] {member.team && `(현재: ${member.team})`}
                     </option>
                   ))}
                 </select>
@@ -616,7 +602,7 @@ export default function AdminDashboard() {
                   <option value="">팀을 선택하세요</option>
                   {teams.map((team) => (
                     <option key={team.team_id} value={team.team_id}>
-                      {team.name} ({team.member_count}명)
+                      {team.name} [ID: {team.team_id}] ({team.member_count}명)
                     </option>
                   ))}
                 </select>
