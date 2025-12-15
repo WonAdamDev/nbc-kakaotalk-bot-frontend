@@ -95,7 +95,8 @@ export default function DataManagement({ onImportComplete }) {
     // Replace All 모드 확인
     if (replaceAll) {
       const confirmed = confirm(
-        '⚠️ 정말로 모든 데이터를 삭제하고 새로 시작하시겠습니까?\n\n' +
+        '⚠️ 정말로 모든 방/멤버/팀 데이터를 삭제하고 새로 시작하시겠습니까?\n\n' +
+        '(경기 데이터는 삭제되지 않습니다)\n\n' +
         '이 작업은 되돌릴 수 없습니다!'
       )
       if (!confirmed) return
@@ -212,11 +213,11 @@ export default function DataManagement({ onImportComplete }) {
               disabled={isUploading}
             />
             <span className="text-yellow-400 font-medium">
-              ⚠️ Replace All Data (모든 기존 데이터 삭제)
+              ⚠️ Replace All Data (모든 방/멤버/팀 데이터 삭제)
             </span>
           </label>
           <p className="text-sm text-gray-400 mt-2 ml-6">
-            체크 시 모든 멤버/팀 데이터를 삭제하고 Excel로 새로 시작합니다.
+            체크 시 모든 방/멤버/팀 데이터를 삭제하고 Excel로 새로 시작합니다. (경기 데이터는 유지)
           </p>
         </div>
 
@@ -331,6 +332,10 @@ export default function DataManagement({ onImportComplete }) {
               {uploadResult.mode === 'replace_all' && (
                 <>
                   <div>
+                    <span className="text-gray-400">삭제된 방:</span>
+                    <span className="ml-2 text-red-400 font-medium">{uploadResult.deleted_rooms || 0}</span>
+                  </div>
+                  <div>
                     <span className="text-gray-400">삭제된 팀:</span>
                     <span className="ml-2 text-red-400 font-medium">{uploadResult.deleted_teams || 0}</span>
                   </div>
@@ -340,6 +345,14 @@ export default function DataManagement({ onImportComplete }) {
                   </div>
                 </>
               )}
+              <div>
+                <span className="text-gray-400">생성된 방:</span>
+                <span className="ml-2 text-green-400 font-medium">{uploadResult.rooms_created || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">스킵된 방:</span>
+                <span className="ml-2 text-yellow-400 font-medium">{uploadResult.rooms_skipped || 0}</span>
+              </div>
               <div>
                 <span className="text-gray-400">생성된 팀:</span>
                 <span className="ml-2 text-green-400 font-medium">{uploadResult.teams_created || 0}</span>
@@ -384,9 +397,11 @@ export default function DataManagement({ onImportComplete }) {
       <div className="card">
         <h2 className="text-2xl font-bold mb-6">📤 Data Export</h2>
         <p className="text-gray-400 mb-6">
-          전체 멤버/팀 데이터를 Excel 파일로 다운로드합니다.
+          전체 방/멤버/팀 데이터를 Excel 파일로 다운로드합니다.
           <br />
           Export한 파일을 수정 후 다시 Import할 수 있습니다.
+          <br />
+          (경기 데이터는 포함되지 않습니다)
         </p>
 
         <button
