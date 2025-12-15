@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import DataManagement from './DataManagement'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -442,6 +443,16 @@ export default function AdminDashboard() {
             >
               경기 관리
             </button>
+            <button
+              onClick={() => setActiveTab('data')}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeTab === 'data'
+                  ? 'text-blue-500 border-b-2 border-blue-500'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              데이터 관리
+            </button>
           </div>
         </div>
 
@@ -698,6 +709,16 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* 데이터 관리 */}
+        {activeTab === 'data' && (
+          <DataManagement
+            onImportComplete={() => {
+              loadMembers()
+              loadTeams()
+            }}
+          />
         )}
       </div>
     </div>

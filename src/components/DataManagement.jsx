@@ -1,0 +1,410 @@
+import { useState } from 'react'
+import axios from 'axios'
+import * as XLSX from 'xlsx'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
+export default function DataManagement({ onImportComplete }) {
+  // Import 상태
+  const [file, setFile] = useState(null)
+  const [replaceAll, setReplaceAll] = useState(false)
+  const [previewData, setPreviewData] = useState(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState(null)
+  const [validationErrors, setValidationErrors] = useState([])
+
+  // Export 상태
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportSuccess, setExportSuccess] = useState(false)
+
+  const getAxiosConfig = () => {
+    const token = localStorage.getItem('admin_token')
+    return {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }
+  }
+
+  // 파일 선택 핸들러
+  const handleFileSelect = (event) => {
+    const selectedFile = event.target.files[0]
+    if (!selectedFile) return
+
+    // 파일 검증
+    if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
+      alert('.xlsx 또는 .xls 파일만 지원됩니다')
+      return
+    }
+
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      alert('파일 크기는 10MB 이하여야 합니다')
+      return
+    }
+
+    setFile(selectedFile)
+    setUploadResult(null)
+    setValidationErrors([])
+    setPreviewData(null)
+
+    // 미리보기 생성
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result)
+        const workbook = XLSX.read(data, { type: 'array' })
+        const sheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[sheetName]
+        const jsonData = XLSX.utils.sheet_to_json(worksheet)
+
+        // 첫 50행만 미리보기
+        const preview = jsonData.slice(0, 50)
+        setPreviewData({
+          rows: preview,
+          totalCount: jsonData.length,
+          hasMore: jsonData.length > 50
+        })
+
+        // 간단한 클라이언트 검증
+        const errors = []
+        preview.forEach((row, index) => {
+          if (!row.room || !row.member) {
+            errors.push({
+              row: index + 2,
+              error: 'room과 member는 필수입니다'
+            })
+          }
+        })
+        setValidationErrors(errors)
+
+      } catch (error) {
+        alert('파일을 읽을 수 없습니다: ' + error.message)
+        setFile(null)
+      }
+    }
+    reader.readAsArrayBuffer(selectedFile)
+  }
+
+  // 업로드 핸들러
+  const handleUpload = async () => {
+    if (!file) {
+      alert('파일을 선택해주세요')
+      return
+    }
+
+    // Replace All 모드 확인
+    if (replaceAll) {
+      const confirmed = confirm(
+        '⚠️ 정말로 모든 데이터를 삭제하고 새로 시작하시겠습니까?\n\n' +
+        '이 작업은 되돌릴 수 없습니다!'
+      )
+      if (!confirmed) return
+    }
+
+    setIsUploading(true)
+    setUploadResult(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('replace_all', replaceAll)
+
+      const response = await axios.post(
+        `${API_URL}/api/admin/data/import`,
+        formData,
+        {
+          ...getAxiosConfig(),
+          headers: {
+            ...getAxiosConfig().headers,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      )
+
+      setUploadResult(response.data.data)
+
+      // Import 완료 후 콜백
+      if (onImportComplete) {
+        onImportComplete()
+      }
+
+      // 성공 메시지
+      alert('Import가 완료되었습니다!')
+
+      // 상태 초기화
+      setFile(null)
+      setPreviewData(null)
+      setValidationErrors([])
+      setReplaceAll(false)
+
+    } catch (error) {
+      console.error('Upload error:', error)
+      if (error.response?.data?.message) {
+        alert('Upload 실패: ' + error.response.data.message)
+      } else {
+        alert('Upload 중 오류가 발생했습니다')
+      }
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  // Export 핸들러
+  const handleExport = async () => {
+    setIsExporting(true)
+    setExportSuccess(false)
+
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/admin/data/export`,
+        {
+          ...getAxiosConfig(),
+          responseType: 'blob'
+        }
+      )
+
+      // Blob 생성 및 다운로드
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+
+      // 파일명 생성
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+      link.download = `nbc_members_teams_${timestamp}.xlsx`
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      setExportSuccess(true)
+      setTimeout(() => setExportSuccess(false), 3000)
+
+    } catch (error) {
+      console.error('Export error:', error)
+      if (error.response?.data?.message) {
+        alert('Export 실패: ' + error.response.data.message)
+      } else {
+        alert('Export 중 오류가 발생했습니다')
+      }
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
+      {/* Import 섹션 */}
+      <div className="card">
+        <h2 className="text-2xl font-bold mb-6">📥 Data Import</h2>
+
+        {/* Replace All 옵션 */}
+        <div className="mb-4 p-4 border border-yellow-500 bg-yellow-900/20 rounded">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={replaceAll}
+              onChange={(e) => setReplaceAll(e.target.checked)}
+              className="mr-2 w-4 h-4"
+              disabled={isUploading}
+            />
+            <span className="text-yellow-400 font-medium">
+              ⚠️ Replace All Data (모든 기존 데이터 삭제)
+            </span>
+          </label>
+          <p className="text-sm text-gray-400 mt-2 ml-6">
+            체크 시 모든 멤버/팀 데이터를 삭제하고 Excel로 새로 시작합니다.
+          </p>
+        </div>
+
+        {/* 파일 선택 */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            Excel 파일 선택
+          </label>
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleFileSelect}
+            disabled={isUploading}
+            className="input w-full"
+          />
+          <p className="text-sm text-gray-400 mt-2">
+            최대 파일 크기: 10MB | 형식: .xlsx, .xls
+          </p>
+        </div>
+
+        {/* 미리보기 */}
+        {previewData && (
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-3">미리보기</h3>
+            <div className="bg-gray-800 rounded p-4 overflow-x-auto">
+              <p className="text-sm text-gray-400 mb-3">
+                {previewData.hasMore
+                  ? `처음 50행 표시 (전체 ${previewData.totalCount}행)`
+                  : `전체 ${previewData.totalCount}행`}
+              </p>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left p-2">#</th>
+                    <th className="text-left p-2">Room</th>
+                    <th className="text-left p-2">Member</th>
+                    <th className="text-left p-2">Team</th>
+                    {previewData.rows[0]?.team_id && <th className="text-left p-2">Team ID</th>}
+                    {previewData.rows[0]?.member_id && <th className="text-left p-2">Member ID</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewData.rows.map((row, index) => (
+                    <tr key={index} className="border-b border-gray-800">
+                      <td className="p-2 text-gray-400">{index + 1}</td>
+                      <td className="p-2">{row.room || '-'}</td>
+                      <td className="p-2">{row.member || '-'}</td>
+                      <td className="p-2">{row.team || '-'}</td>
+                      {previewData.rows[0]?.team_id && <td className="p-2 text-xs text-gray-500">{row.team_id || '-'}</td>}
+                      {previewData.rows[0]?.member_id && <td className="p-2 text-xs text-gray-500">{row.member_id || '-'}</td>}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 검증 에러 */}
+            {validationErrors.length > 0 && (
+              <div className="mt-3 p-3 bg-red-900/20 border border-red-500 rounded">
+                <p className="text-red-400 font-medium mb-2">
+                  ⚠️ 검증 오류 ({validationErrors.length}개)
+                </p>
+                <ul className="text-sm text-red-300 space-y-1">
+                  {validationErrors.slice(0, 5).map((err, idx) => (
+                    <li key={idx}>
+                      행 {err.row}: {err.error}
+                    </li>
+                  ))}
+                  {validationErrors.length > 5 && (
+                    <li className="text-gray-400">
+                      ... 외 {validationErrors.length - 5}개
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 업로드 버튼 */}
+        <div className="flex gap-3">
+          <button
+            onClick={handleUpload}
+            disabled={!file || isUploading}
+            className="btn btn-primary"
+          >
+            {isUploading ? '업로드 중...' : '업로드'}
+          </button>
+          {file && (
+            <button
+              onClick={() => {
+                setFile(null)
+                setPreviewData(null)
+                setValidationErrors([])
+                setReplaceAll(false)
+              }}
+              disabled={isUploading}
+              className="btn btn-secondary"
+            >
+              취소
+            </button>
+          )}
+        </div>
+
+        {/* 업로드 결과 */}
+        {uploadResult && (
+          <div className="mt-6 p-4 bg-green-900/20 border border-green-500 rounded">
+            <h3 className="text-lg font-medium text-green-400 mb-3">
+              ✅ Upload 완료
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              {uploadResult.mode === 'replace_all' && (
+                <>
+                  <div>
+                    <span className="text-gray-400">삭제된 팀:</span>
+                    <span className="ml-2 text-red-400 font-medium">{uploadResult.deleted_teams || 0}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">삭제된 멤버:</span>
+                    <span className="ml-2 text-red-400 font-medium">{uploadResult.deleted_members || 0}</span>
+                  </div>
+                </>
+              )}
+              <div>
+                <span className="text-gray-400">생성된 팀:</span>
+                <span className="ml-2 text-green-400 font-medium">{uploadResult.teams_created || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">스킵된 팀:</span>
+                <span className="ml-2 text-yellow-400 font-medium">{uploadResult.teams_skipped || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">생성된 멤버:</span>
+                <span className="ml-2 text-green-400 font-medium">{uploadResult.members_created || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">스킵된 멤버:</span>
+                <span className="ml-2 text-yellow-400 font-medium">{uploadResult.members_skipped || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">처리 시간:</span>
+                <span className="ml-2">{uploadResult.processing_time_ms}ms</span>
+              </div>
+            </div>
+
+            {uploadResult.errors && uploadResult.errors.length > 0 && (
+              <div className="mt-4 p-3 bg-red-900/20 border border-red-500 rounded">
+                <p className="text-red-400 font-medium mb-2">
+                  에러 ({uploadResult.errors.length}개)
+                </p>
+                <ul className="text-sm text-red-300 space-y-1 max-h-40 overflow-y-auto">
+                  {uploadResult.errors.map((err, idx) => (
+                    <li key={idx}>
+                      행 {err.row}: {err.error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Export 섹션 */}
+      <div className="card">
+        <h2 className="text-2xl font-bold mb-6">📤 Data Export</h2>
+        <p className="text-gray-400 mb-6">
+          전체 멤버/팀 데이터를 Excel 파일로 다운로드합니다.
+          <br />
+          Export한 파일을 수정 후 다시 Import할 수 있습니다.
+        </p>
+
+        <button
+          onClick={handleExport}
+          disabled={isExporting}
+          className="btn btn-primary"
+        >
+          {isExporting ? 'Exporting...' : 'Export All Data'}
+        </button>
+
+        {exportSuccess && (
+          <div className="mt-4 p-3 bg-green-900/20 border border-green-500 rounded">
+            <p className="text-green-400">
+              ✅ Export가 완료되었습니다!
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
