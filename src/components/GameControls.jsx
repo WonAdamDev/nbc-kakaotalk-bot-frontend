@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function GameControls({ game, gameId, onUpdate, teamHome, teamAway }) {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
 
   // 경기 시작 가능 여부 검증
@@ -110,6 +112,15 @@ export default function GameControls({ game, gameId, onUpdate, teamHome, teamAwa
             ⏹️ 경기 종료
           </button>
         )}
+
+        {game.status === '종료' && (
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className="btn btn-primary"
+          >
+            📊 Admin Dashboard
+          </button>
+        )}
       </div>
 
       {game.status === '준비중' && (
@@ -135,7 +146,7 @@ export default function GameControls({ game, gameId, onUpdate, teamHome, teamAwa
 
       {game.status === '종료' && (
         <p className="text-sm text-gray-500 mt-3">
-          ※ 경기가 종료되었습니다.
+          ※ 경기가 종료되었습니다. Admin Dashboard에서 다른 경기를 관리할 수 있습니다.
         </p>
       )}
     </div>
