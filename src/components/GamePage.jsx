@@ -96,13 +96,20 @@ export default function GamePage() {
         break
 
       case 'lineup_swapped':
-        // 라인업 순번 교체 - 해당 팀만 업데이트
-        if (data.lineups) {
-          setLineups(prev => ({
-            ...prev,
-            [data.team]: data.lineups
-          }))
+        // 라인업 순번 교체 - 영향받은 모든 팀의 라인업 업데이트
+        if (data.lineups && data.affected_teams) {
+          setLineups(prev => {
+            const updated = { ...prev }
+            // 영향받은 모든 팀의 라인업을 한 번에 업데이트
+            data.affected_teams.forEach(team => {
+              if (data.lineups[team]) {
+                updated[team] = data.lineups[team]
+              }
+            })
+            return updated
+          })
         } else {
+          // 구 형식 호환 또는 데이터가 없으면 전체 새로고침
           loadGameData()
         }
         break
