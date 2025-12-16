@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom'
 import { formatDateTimeKST } from '../utils/timeUtils'
 
 export default function GameHeader({ game }) {
+  const navigate = useNavigate()
   const getStatusBadge = (status) => {
     const badges = {
       '준비중': 'badge badge-warning',
@@ -20,6 +22,14 @@ export default function GameHeader({ game }) {
           <p className="text-gray-600">
             경기 ID: <span className="font-mono font-semibold">{game.game_id}</span>
           </p>
+          {game.parent_game_id && (
+            <button
+              onClick={() => navigate(`/game/${game.parent_game_id}`)}
+              className="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+            >
+              ← 원본 경기 보기
+            </button>
+          )}
         </div>
         <div className="text-right">
           <span className={getStatusBadge(game.status)}>
