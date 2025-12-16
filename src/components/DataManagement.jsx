@@ -217,8 +217,8 @@ export default function DataManagement({ onImportComplete }) {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Import 섹션 */}
-      <div className="card">
-        <h2 className="text-2xl font-bold mb-6">📥 Data Import</h2>
+      <div className="bg-gray-800 rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-white mb-6">📥 Data Import</h2>
 
         {/* Import 모드 선택 */}
         <div className="mb-4 space-y-3">
@@ -459,8 +459,8 @@ export default function DataManagement({ onImportComplete }) {
       </div>
 
       {/* Export 섹션 */}
-      <div className="card">
-        <h2 className="text-2xl font-bold mb-6">📤 Data Export</h2>
+      <div className="bg-gray-800 rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-white mb-6">📤 Data Export</h2>
         <p className="text-gray-300 mb-6">
           전체 방/멤버/팀 데이터를 Excel 파일로 다운로드합니다.
           <br />
