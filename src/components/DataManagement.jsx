@@ -8,6 +8,7 @@ export default function DataManagement({ onImportComplete }) {
   // Import 상태
   const [file, setFile] = useState(null)
   const [replaceAll, setReplaceAll] = useState(false)
+  const [updateMerge, setUpdateMerge] = useState(false)
   const [previewData, setPreviewData] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState(null)
@@ -95,9 +96,24 @@ export default function DataManagement({ onImportComplete }) {
     // Replace All 모드 확인
     if (replaceAll) {
       const confirmed = confirm(
-        '⚠️ 정말로 모든 방/멤버/팀 데이터를 삭제하고 새로 시작하시겠습니까?\n\n' +
-        '(경기 데이터는 삭제되지 않습니다)\n\n' +
+        '⚠️ 정말로 모든 데이터를 삭제하고 새로 시작하시겠습니까?\n\n' +
+        '삭제되는 데이터:\n' +
+        '- 모든 방/멤버/팀 데이터\n' +
+        '- 모든 경기/라인업/쿼터 데이터 (CASCADE DELETE)\n\n' +
         '이 작업은 되돌릴 수 없습니다!'
+      )
+      if (!confirmed) return
+    }
+
+    // Update/Merge 모드 확인
+    if (updateMerge) {
+      const confirmed = confirm(
+        '🔄 Update/Merge 모드로 Import하시겠습니까?\n\n' +
+        '동작:\n' +
+        '- ID가 있는 데이터 → 업데이트\n' +
+        '- ID가 없는 데이터 → 새로 추가\n' +
+        '- 방(Room)은 새로 생성되지 않음 (경기 데이터 보존)\n\n' +
+        'Excel에 없는 기존 Room의 방 이름이 있으면 에러가 발생합니다.'
       )
       if (!confirmed) return
     }
@@ -109,6 +125,7 @@ export default function DataManagement({ onImportComplete }) {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('replace_all', replaceAll)
+      formData.append('update_merge', updateMerge)
 
       const response = await axios.post(
         `${API_URL}/api/admin/data/import`,
@@ -137,6 +154,7 @@ export default function DataManagement({ onImportComplete }) {
       setPreviewData(null)
       setValidationErrors([])
       setReplaceAll(false)
+      setUpdateMerge(false)
 
     } catch (error) {
       console.error('Upload error:', error)
@@ -202,23 +220,57 @@ export default function DataManagement({ onImportComplete }) {
       <div className="card">
         <h2 className="text-2xl font-bold mb-6">📥 Data Import</h2>
 
-        {/* Replace All 옵션 */}
-        <div className="mb-4 p-4 border border-yellow-500 bg-yellow-900/20 rounded">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={replaceAll}
-              onChange={(e) => setReplaceAll(e.target.checked)}
-              className="mr-2 w-4 h-4"
-              disabled={isUploading}
-            />
-            <span className="text-yellow-400 font-medium">
-              ⚠️ Replace All Data (모든 방/멤버/팀 데이터 삭제)
-            </span>
-          </label>
-          <p className="text-sm text-gray-400 mt-2 ml-6">
-            체크 시 모든 방/멤버/팀 데이터를 삭제하고 Excel로 새로 시작합니다. (경기 데이터는 유지)
-          </p>
+        {/* Import 모드 선택 */}
+        <div className="mb-4 space-y-3">
+          {/* Replace All 옵션 */}
+          <div className="p-4 border border-yellow-500 bg-yellow-900/20 rounded">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={replaceAll}
+                onChange={(e) => {
+                  setReplaceAll(e.target.checked)
+                  if (e.target.checked) setUpdateMerge(false)
+                }}
+                className="mr-2 w-4 h-4"
+                disabled={isUploading}
+              />
+              <span className="text-yellow-400 font-medium">
+                ⚠️ Replace All Data (모든 방/멤버/팀 데이터 삭제)
+              </span>
+            </label>
+            <p className="text-sm text-gray-400 mt-2 ml-6">
+              체크 시 모든 방/멤버/팀 데이터를 삭제하고 Excel로 새로 시작합니다.
+            </p>
+            <p className="text-sm text-red-400 mt-1 ml-6 font-medium">
+              ⚠️ 경고: 모든 경기/라인업/쿼터 데이터도 함께 삭제됩니다 (CASCADE DELETE)
+            </p>
+          </div>
+
+          {/* Update/Merge 옵션 */}
+          <div className="p-4 border border-blue-500 bg-blue-900/20 rounded">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={updateMerge}
+                onChange={(e) => {
+                  setUpdateMerge(e.target.checked)
+                  if (e.target.checked) setReplaceAll(false)
+                }}
+                className="mr-2 w-4 h-4"
+                disabled={isUploading}
+              />
+              <span className="text-blue-400 font-medium">
+                🔄 Update/Merge Mode (ID 기준 업데이트)
+              </span>
+            </label>
+            <p className="text-sm text-gray-400 mt-2 ml-6">
+              Excel에 ID가 있으면 해당 데이터를 업데이트하고, ID가 없으면 새로 추가합니다.
+            </p>
+            <p className="text-sm text-green-400 mt-1 ml-6 font-medium">
+              ✅ 방(Room)은 생성하지 않아 경기 데이터가 보존됩니다.
+            </p>
+          </div>
         </div>
 
         {/* 파일 선택 */}
@@ -313,6 +365,7 @@ export default function DataManagement({ onImportComplete }) {
                 setPreviewData(null)
                 setValidationErrors([])
                 setReplaceAll(false)
+                setUpdateMerge(false)
               }}
               disabled={isUploading}
               className="btn btn-secondary"
@@ -357,6 +410,12 @@ export default function DataManagement({ onImportComplete }) {
                 <span className="text-gray-400">생성된 팀:</span>
                 <span className="ml-2 text-green-400 font-medium">{uploadResult.teams_created || 0}</span>
               </div>
+              {uploadResult.mode === 'update_merge' && (
+                <div>
+                  <span className="text-gray-400">업데이트된 팀:</span>
+                  <span className="ml-2 text-blue-400 font-medium">{uploadResult.teams_updated || 0}</span>
+                </div>
+              )}
               <div>
                 <span className="text-gray-400">스킵된 팀:</span>
                 <span className="ml-2 text-yellow-400 font-medium">{uploadResult.teams_skipped || 0}</span>
@@ -365,6 +424,12 @@ export default function DataManagement({ onImportComplete }) {
                 <span className="text-gray-400">생성된 멤버:</span>
                 <span className="ml-2 text-green-400 font-medium">{uploadResult.members_created || 0}</span>
               </div>
+              {uploadResult.mode === 'update_merge' && (
+                <div>
+                  <span className="text-gray-400">업데이트된 멤버:</span>
+                  <span className="ml-2 text-blue-400 font-medium">{uploadResult.members_updated || 0}</span>
+                </div>
+              )}
               <div>
                 <span className="text-gray-400">스킵된 멤버:</span>
                 <span className="ml-2 text-yellow-400 font-medium">{uploadResult.members_skipped || 0}</span>
