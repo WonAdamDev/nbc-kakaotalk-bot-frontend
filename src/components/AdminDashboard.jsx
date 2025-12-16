@@ -359,6 +359,31 @@ export default function AdminDashboard() {
     }
   }
 
+  // 경기 복사 (이어하기)
+  const handleCopyGame = async (gameId) => {
+    if (!confirm('이 경기의 선수들로 새 경기를 생성하시겠습니까?')) return
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/game/${gameId}/copy`,
+        {},
+        getAxiosConfig()
+      )
+
+      if (response.data.success) {
+        alert(`새 경기가 생성되었습니다.\n복사된 선수: ${response.data.data.copied_players}명`)
+        loadGames()
+
+        // 새 경기 페이지로 이동할지 물어보기
+        if (confirm('새 경기 페이지로 이동하시겠습니까?')) {
+          navigate(`/game/${response.data.data.game_id}`)
+        }
+      }
+    } catch (err) {
+      handleApiError(err, '경기 복사 실패')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -783,6 +808,12 @@ export default function AdminDashboard() {
                         )}
                       </div>
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => handleCopyGame(game.game_id)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        >
+                          🔄 이어하기
+                        </button>
                         <button
                           onClick={() => navigate(`/game/${game.game_id}`)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
