@@ -670,42 +670,138 @@ export default function AdminDashboard() {
               </form>
             </div>
 
-            {/* 경기 목록 */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">
-                경기 목록 ({games.length}개)
-              </h2>
-              <div className="space-y-2">
-                {games.map((game) => (
-                  <div
-                    key={game.game_id}
-                    className="flex items-center justify-between bg-gray-700 p-4 rounded-lg"
-                  >
-                    <div>
-                      <p className="text-white font-medium">경기 ID: {game.game_id}</p>
-                      <p className="text-sm text-gray-400">
-                        상태: {game.status} | 생성자: {game.creator || '-'}
-                      </p>
+            {/* 경기 목록 - 상태별 */}
+            <div className="space-y-6">
+              {/* 준비중 경기 */}
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-white mb-4">
+                  ⏳ 준비중 ({games.filter(g => g.status === '준비중').length}개)
+                </h2>
+                <div className="space-y-2">
+                  {games.filter(g => g.status === '준비중').map((game) => (
+                    <div
+                      key={game.game_id}
+                      className="flex items-center justify-between bg-gray-700 p-4 rounded-lg"
+                    >
+                      <div>
+                        <p className="text-white font-medium">경기 ID: {game.game_id}</p>
+                        <p className="text-sm text-gray-400">
+                          생성자: {game.creator || '-'} | 날짜: {game.date || '-'}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/game/${game.game_id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        >
+                          보기
+                        </button>
+                        <button
+                          onClick={() => handleDeleteGame(game.game_id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        >
+                          삭제
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => navigate(`/game/${game.game_id}`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                      >
-                        보기
-                      </button>
-                      <button
-                        onClick={() => handleDeleteGame(game.game_id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                      >
-                        삭제
-                      </button>
+                  ))}
+                  {games.filter(g => g.status === '준비중').length === 0 && (
+                    <p className="text-gray-400 text-center py-4">준비중인 경기가 없습니다.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* 진행중 경기 */}
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-white mb-4">
+                  ▶️ 진행중 ({games.filter(g => g.status === '진행중').length}개)
+                </h2>
+                <div className="space-y-2">
+                  {games.filter(g => g.status === '진행중').map((game) => (
+                    <div
+                      key={game.game_id}
+                      className="flex items-center justify-between bg-gray-700 p-4 rounded-lg border-l-4 border-green-500"
+                    >
+                      <div>
+                        <p className="text-white font-medium">경기 ID: {game.game_id}</p>
+                        <p className="text-sm text-gray-400">
+                          생성자: {game.creator || '-'} | 쿼터: {game.current_quarter || 0}
+                        </p>
+                        {game.team_home && game.team_away && (
+                          <p className="text-sm text-green-400 mt-1">
+                            {game.team_home} vs {game.team_away}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/game/${game.game_id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        >
+                          보기
+                        </button>
+                        <button
+                          onClick={() => handleDeleteGame(game.game_id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        >
+                          삭제
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {games.length === 0 && (
-                  <p className="text-gray-400 text-center py-8">경기가 없습니다.</p>
-                )}
+                  ))}
+                  {games.filter(g => g.status === '진행중').length === 0 && (
+                    <p className="text-gray-400 text-center py-4">진행중인 경기가 없습니다.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* 종료 경기 */}
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-white mb-4">
+                  ⏹️ 종료 ({games.filter(g => g.status === '종료').length}개)
+                </h2>
+                <div className="space-y-2">
+                  {games.filter(g => g.status === '종료').map((game) => (
+                    <div
+                      key={game.game_id}
+                      className="flex items-center justify-between bg-gray-700 p-4 rounded-lg opacity-75"
+                    >
+                      <div>
+                        <p className="text-white font-medium">경기 ID: {game.game_id}</p>
+                        <p className="text-sm text-gray-400">
+                          생성자: {game.creator || '-'} | 날짜: {game.date || '-'}
+                        </p>
+                        {game.team_home && game.team_away && (
+                          <p className="text-sm text-gray-400 mt-1">
+                            {game.team_home} {game.final_score?.home || 0} : {game.final_score?.away || 0} {game.team_away}
+                          </p>
+                        )}
+                        {game.winner && (
+                          <p className="text-sm text-blue-400 mt-1">
+                            승자: {game.winner === 'home' ? game.team_home : game.winner === 'away' ? game.team_away : '무승부'}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/game/${game.game_id}`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        >
+                          보기
+                        </button>
+                        <button
+                          onClick={() => handleDeleteGame(game.game_id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {games.filter(g => g.status === '종료').length === 0 && (
+                    <p className="text-gray-400 text-center py-4">종료된 경기가 없습니다.</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
