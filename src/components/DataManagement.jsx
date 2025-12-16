@@ -223,7 +223,7 @@ export default function DataManagement({ onImportComplete }) {
         {/* Import 모드 선택 */}
         <div className="mb-4 space-y-3">
           {/* Replace All 옵션 */}
-          <div className="p-4 border border-yellow-500 bg-yellow-900/20 rounded">
+          <div className="p-4 border border-yellow-600/50 bg-gray-800 rounded">
             <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -235,20 +235,20 @@ export default function DataManagement({ onImportComplete }) {
                 className="mr-2 w-4 h-4"
                 disabled={isUploading}
               />
-              <span className="text-yellow-400 font-medium">
+              <span className="text-yellow-300 font-medium">
                 ⚠️ Replace All Data (모든 방/멤버/팀 데이터 삭제)
               </span>
             </label>
-            <p className="text-sm text-gray-400 mt-2 ml-6">
+            <p className="text-sm text-gray-300 mt-2 ml-6">
               체크 시 모든 방/멤버/팀 데이터를 삭제하고 Excel로 새로 시작합니다.
             </p>
-            <p className="text-sm text-red-400 mt-1 ml-6 font-medium">
+            <p className="text-sm text-red-300 mt-1 ml-6 font-medium">
               ⚠️ 경고: 모든 경기/라인업/쿼터 데이터도 함께 삭제됩니다 (CASCADE DELETE)
             </p>
           </div>
 
           {/* Update/Merge 옵션 */}
-          <div className="p-4 border border-blue-500 bg-blue-900/20 rounded">
+          <div className="p-4 border border-blue-600/50 bg-gray-800 rounded">
             <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -260,14 +260,14 @@ export default function DataManagement({ onImportComplete }) {
                 className="mr-2 w-4 h-4"
                 disabled={isUploading}
               />
-              <span className="text-blue-400 font-medium">
+              <span className="text-blue-300 font-medium">
                 🔄 Update/Merge Mode (ID 기준 업데이트)
               </span>
             </label>
-            <p className="text-sm text-gray-400 mt-2 ml-6">
+            <p className="text-sm text-gray-300 mt-2 ml-6">
               Excel에 ID가 있으면 해당 데이터를 업데이트하고, ID가 없으면 새로 추가합니다.
             </p>
-            <p className="text-sm text-green-400 mt-1 ml-6 font-medium">
+            <p className="text-sm text-green-300 mt-1 ml-6 font-medium">
               ✅ 방(Room)은 생성하지 않아 경기 데이터가 보존됩니다.
             </p>
           </div>
@@ -285,7 +285,7 @@ export default function DataManagement({ onImportComplete }) {
             disabled={isUploading}
             className="input w-full"
           />
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="text-sm text-gray-300 mt-2">
             최대 파일 크기: 10MB | 형식: .xlsx, .xls
           </p>
         </div>
@@ -295,7 +295,7 @@ export default function DataManagement({ onImportComplete }) {
           <div className="mb-6">
             <h3 className="text-lg font-medium mb-3">미리보기</h3>
             <div className="bg-gray-800 rounded p-4 overflow-x-auto">
-              <p className="text-sm text-gray-400 mb-3">
+              <p className="text-sm text-gray-300 mb-3">
                 {previewData.hasMore
                   ? `처음 50행 표시 (전체 ${previewData.totalCount}행)`
                   : `전체 ${previewData.totalCount}행`}
@@ -314,12 +314,12 @@ export default function DataManagement({ onImportComplete }) {
                 <tbody>
                   {previewData.rows.map((row, index) => (
                     <tr key={index} className="border-b border-gray-800">
-                      <td className="p-2 text-gray-400">{index + 1}</td>
-                      <td className="p-2">{row.room || '-'}</td>
-                      <td className="p-2">{row.member || '-'}</td>
-                      <td className="p-2">{row.team || '-'}</td>
-                      {previewData.rows[0]?.team_id && <td className="p-2 text-xs text-gray-500">{row.team_id || '-'}</td>}
-                      {previewData.rows[0]?.member_id && <td className="p-2 text-xs text-gray-500">{row.member_id || '-'}</td>}
+                      <td className="p-2 text-gray-300">{index + 1}</td>
+                      <td className="p-2 text-white">{row.room || '-'}</td>
+                      <td className="p-2 text-white">{row.member || '-'}</td>
+                      <td className="p-2 text-white">{row.team || '-'}</td>
+                      {previewData.rows[0]?.team_id && <td className="p-2 text-xs text-gray-400">{row.team_id || '-'}</td>}
+                      {previewData.rows[0]?.member_id && <td className="p-2 text-xs text-gray-400">{row.member_id || '-'}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -328,18 +328,18 @@ export default function DataManagement({ onImportComplete }) {
 
             {/* 검증 에러 */}
             {validationErrors.length > 0 && (
-              <div className="mt-3 p-3 bg-red-900/20 border border-red-500 rounded">
-                <p className="text-red-400 font-medium mb-2">
+              <div className="mt-3 p-3 bg-gray-800 border border-red-600/50 rounded">
+                <p className="text-red-300 font-medium mb-2">
                   ⚠️ 검증 오류 ({validationErrors.length}개)
                 </p>
-                <ul className="text-sm text-red-300 space-y-1">
+                <ul className="text-sm text-red-200 space-y-1">
                   {validationErrors.slice(0, 5).map((err, idx) => (
                     <li key={idx}>
                       행 {err.row}: {err.error}
                     </li>
                   ))}
                   {validationErrors.length > 5 && (
-                    <li className="text-gray-400">
+                    <li className="text-gray-300">
                       ... 외 {validationErrors.length - 5}개
                     </li>
                   )}
@@ -377,75 +377,75 @@ export default function DataManagement({ onImportComplete }) {
 
         {/* 업로드 결과 */}
         {uploadResult && (
-          <div className="mt-6 p-4 bg-green-900/20 border border-green-500 rounded">
-            <h3 className="text-lg font-medium text-green-400 mb-3">
+          <div className="mt-6 p-4 bg-gray-800 border border-green-600/50 rounded">
+            <h3 className="text-lg font-medium text-green-300 mb-3">
               ✅ Upload 완료
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               {uploadResult.mode === 'replace_all' && (
                 <>
                   <div>
-                    <span className="text-gray-400">삭제된 방:</span>
-                    <span className="ml-2 text-red-400 font-medium">{uploadResult.deleted_rooms || 0}</span>
+                    <span className="text-gray-300">삭제된 방:</span>
+                    <span className="ml-2 text-red-300 font-medium">{uploadResult.deleted_rooms || 0}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400">삭제된 팀:</span>
-                    <span className="ml-2 text-red-400 font-medium">{uploadResult.deleted_teams || 0}</span>
+                    <span className="text-gray-300">삭제된 팀:</span>
+                    <span className="ml-2 text-red-300 font-medium">{uploadResult.deleted_teams || 0}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400">삭제된 멤버:</span>
-                    <span className="ml-2 text-red-400 font-medium">{uploadResult.deleted_members || 0}</span>
+                    <span className="text-gray-300">삭제된 멤버:</span>
+                    <span className="ml-2 text-red-300 font-medium">{uploadResult.deleted_members || 0}</span>
                   </div>
                 </>
               )}
               <div>
-                <span className="text-gray-400">생성된 방:</span>
-                <span className="ml-2 text-green-400 font-medium">{uploadResult.rooms_created || 0}</span>
+                <span className="text-gray-300">생성된 방:</span>
+                <span className="ml-2 text-green-300 font-medium">{uploadResult.rooms_created || 0}</span>
               </div>
               <div>
-                <span className="text-gray-400">스킵된 방:</span>
-                <span className="ml-2 text-yellow-400 font-medium">{uploadResult.rooms_skipped || 0}</span>
+                <span className="text-gray-300">스킵된 방:</span>
+                <span className="ml-2 text-yellow-300 font-medium">{uploadResult.rooms_skipped || 0}</span>
               </div>
               <div>
-                <span className="text-gray-400">생성된 팀:</span>
-                <span className="ml-2 text-green-400 font-medium">{uploadResult.teams_created || 0}</span>
-              </div>
-              {uploadResult.mode === 'update_merge' && (
-                <div>
-                  <span className="text-gray-400">업데이트된 팀:</span>
-                  <span className="ml-2 text-blue-400 font-medium">{uploadResult.teams_updated || 0}</span>
-                </div>
-              )}
-              <div>
-                <span className="text-gray-400">스킵된 팀:</span>
-                <span className="ml-2 text-yellow-400 font-medium">{uploadResult.teams_skipped || 0}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">생성된 멤버:</span>
-                <span className="ml-2 text-green-400 font-medium">{uploadResult.members_created || 0}</span>
+                <span className="text-gray-300">생성된 팀:</span>
+                <span className="ml-2 text-green-300 font-medium">{uploadResult.teams_created || 0}</span>
               </div>
               {uploadResult.mode === 'update_merge' && (
                 <div>
-                  <span className="text-gray-400">업데이트된 멤버:</span>
-                  <span className="ml-2 text-blue-400 font-medium">{uploadResult.members_updated || 0}</span>
+                  <span className="text-gray-300">업데이트된 팀:</span>
+                  <span className="ml-2 text-blue-300 font-medium">{uploadResult.teams_updated || 0}</span>
                 </div>
               )}
               <div>
-                <span className="text-gray-400">스킵된 멤버:</span>
-                <span className="ml-2 text-yellow-400 font-medium">{uploadResult.members_skipped || 0}</span>
+                <span className="text-gray-300">스킵된 팀:</span>
+                <span className="ml-2 text-yellow-300 font-medium">{uploadResult.teams_skipped || 0}</span>
               </div>
               <div>
-                <span className="text-gray-400">처리 시간:</span>
-                <span className="ml-2">{uploadResult.processing_time_ms}ms</span>
+                <span className="text-gray-300">생성된 멤버:</span>
+                <span className="ml-2 text-green-300 font-medium">{uploadResult.members_created || 0}</span>
+              </div>
+              {uploadResult.mode === 'update_merge' && (
+                <div>
+                  <span className="text-gray-300">업데이트된 멤버:</span>
+                  <span className="ml-2 text-blue-300 font-medium">{uploadResult.members_updated || 0}</span>
+                </div>
+              )}
+              <div>
+                <span className="text-gray-300">스킵된 멤버:</span>
+                <span className="ml-2 text-yellow-300 font-medium">{uploadResult.members_skipped || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-300">처리 시간:</span>
+                <span className="ml-2 text-white">{uploadResult.processing_time_ms}ms</span>
               </div>
             </div>
 
             {uploadResult.errors && uploadResult.errors.length > 0 && (
-              <div className="mt-4 p-3 bg-red-900/20 border border-red-500 rounded">
-                <p className="text-red-400 font-medium mb-2">
+              <div className="mt-4 p-3 bg-gray-800 border border-red-600/50 rounded">
+                <p className="text-red-300 font-medium mb-2">
                   에러 ({uploadResult.errors.length}개)
                 </p>
-                <ul className="text-sm text-red-300 space-y-1 max-h-40 overflow-y-auto">
+                <ul className="text-sm text-red-200 space-y-1 max-h-40 overflow-y-auto">
                   {uploadResult.errors.map((err, idx) => (
                     <li key={idx}>
                       행 {err.row}: {err.error}
@@ -461,7 +461,7 @@ export default function DataManagement({ onImportComplete }) {
       {/* Export 섹션 */}
       <div className="card">
         <h2 className="text-2xl font-bold mb-6">📤 Data Export</h2>
-        <p className="text-gray-400 mb-6">
+        <p className="text-gray-300 mb-6">
           전체 방/멤버/팀 데이터를 Excel 파일로 다운로드합니다.
           <br />
           Export한 파일을 수정 후 다시 Import할 수 있습니다.
@@ -478,8 +478,8 @@ export default function DataManagement({ onImportComplete }) {
         </button>
 
         {exportSuccess && (
-          <div className="mt-4 p-3 bg-green-900/20 border border-green-500 rounded">
-            <p className="text-green-400">
+          <div className="mt-4 p-3 bg-gray-800 border border-green-600/50 rounded">
+            <p className="text-green-300">
               ✅ Export가 완료되었습니다!
             </p>
           </div>
