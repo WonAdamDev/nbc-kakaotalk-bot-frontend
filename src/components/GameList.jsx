@@ -180,10 +180,10 @@ export default function GameList() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    {/* 경기 ID와 상태 */}
+                    {/* 경기 제목과 상태 */}
                     <div className="flex items-center gap-3 mb-3">
                       <h2 className="text-xl font-bold text-white">
-                        {game.game_id}
+                        {game.alias || game.date || game.game_id}
                       </h2>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${getStatusBadge(
@@ -193,21 +193,13 @@ export default function GameList() {
                         {game.status}
                       </span>
                     </div>
+                    {/* 경기 ID 표시 */}
+                    <p className="text-sm text-gray-500 mb-3">
+                      {game.room} · <span className="font-mono">{game.game_id}</span>
+                    </p>
 
                     {/* 경기 정보 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-400">방:</span>{' '}
-                        <span className="text-white font-medium">
-                          {game.room || '-'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">생성자:</span>{' '}
-                        <span className="text-white font-medium">
-                          {game.creator || '-'}
-                        </span>
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                       <div>
                         <span className="text-gray-400">경기일:</span>{' '}
                         <span className="text-white font-medium">
@@ -220,6 +212,14 @@ export default function GameList() {
                           {formatTime(game.created_at)}
                         </span>
                       </div>
+                      {game.started_at && (
+                        <div>
+                          <span className="text-gray-400">시작 시간:</span>{' '}
+                          <span className="text-white font-medium">
+                            {formatTime(game.started_at)}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 경기 진행 정보 */}

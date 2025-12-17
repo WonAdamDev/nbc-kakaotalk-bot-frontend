@@ -17,10 +17,10 @@ export default function GameHeader({ game }) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {game.room}
+            {game.alias || game.date || '경기'}
           </h1>
           <p className="text-gray-600">
-            경기 ID: <span className="font-mono font-semibold">{game.game_id}</span>
+            {game.room} · <span className="font-mono font-semibold">{game.game_id}</span>
           </p>
           {game.parent_game_id && (
             <button
@@ -45,8 +45,8 @@ export default function GameHeader({ game }) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
-          <p className="text-gray-500">생성자</p>
-          <p className="font-semibold">{game.creator || '-'}</p>
+          <p className="text-gray-500">방 이름</p>
+          <p className="font-semibold">{game.room || '-'}</p>
         </div>
         <div>
           <p className="text-gray-500">날짜</p>

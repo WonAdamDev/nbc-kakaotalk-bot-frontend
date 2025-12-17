@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   // 폼 데이터
   const [memberForm, setMemberForm] = useState({ name: '' })
   const [teamForm, setTeamForm] = useState({ name: '' })
-  const [gameForm, setGameForm] = useState({ creator: '', date: '' })
+  const [gameForm, setGameForm] = useState({ alias: '', date: '' })
   const [assignForm, setAssignForm] = useState({ memberId: '', teamId: '' })
 
   // 인증 확인 및 axios 인터셉터 설정
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
         `${API_URL}/api/game/create`,
         {
           room: selectedRoom,
-          creator: gameForm.creator || 'Admin',
+          alias: gameForm.alias || undefined,
           date: gameForm.date || undefined
         },
         getAxiosConfig()
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
 
       if (response.data.success) {
         alert('경기가 생성되었습니다.')
-        setGameForm({ creator: '', date: '' })
+        setGameForm({ alias: '', date: '' })
         loadGames()
       }
     } catch (err) {
@@ -695,15 +695,18 @@ export default function AdminDashboard() {
               <form onSubmit={handleCreateGame} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    생성자 (선택)
+                    경기 별칭 (선택)
                   </label>
                   <input
                     type="text"
-                    value={gameForm.creator}
-                    onChange={(e) => setGameForm({ ...gameForm, creator: e.target.value })}
-                    placeholder="Admin"
+                    value={gameForm.alias}
+                    onChange={(e) => setGameForm({ ...gameForm, alias: e.target.value })}
+                    placeholder="입력하지 않으면 날짜로 자동 설정"
                     className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    경기를 구분하기 쉽게 별칭을 붙여보세요 (예: "주말 친선전", "시즌 1차전" 등)
+                  </p>
                 </div>
 
                 <div>
@@ -716,6 +719,9 @@ export default function AdminDashboard() {
                     onChange={(e) => setGameForm({ ...gameForm, date: e.target.value })}
                     className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    입력하지 않으면 오늘 날짜로 설정됩니다
+                  </p>
                 </div>
 
                 <button
@@ -741,9 +747,9 @@ export default function AdminDashboard() {
                       className="flex items-center justify-between bg-gray-700 p-4 rounded-lg"
                     >
                       <div>
-                        <p className="text-white font-medium">경기 ID: {game.game_id}</p>
+                        <p className="text-white font-medium">{game.alias || game.date || '경기'}</p>
                         <p className="text-sm text-gray-400">
-                          생성자: {game.creator || '-'} | 날짜: {game.date || '-'}
+                          ID: {game.game_id} | 날짜: {game.date || '-'}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -780,9 +786,9 @@ export default function AdminDashboard() {
                       className="flex items-center justify-between bg-gray-700 p-4 rounded-lg border-l-4 border-green-500"
                     >
                       <div>
-                        <p className="text-white font-medium">경기 ID: {game.game_id}</p>
+                        <p className="text-white font-medium">{game.alias || game.date || '경기'}</p>
                         <p className="text-sm text-gray-400">
-                          생성자: {game.creator || '-'} | 쿼터: {game.current_quarter || 0}
+                          ID: {game.game_id} | 쿼터: {game.current_quarter || 0}
                         </p>
                         {game.team_home && game.team_away && (
                           <p className="text-sm text-green-400 mt-1">
@@ -824,9 +830,9 @@ export default function AdminDashboard() {
                       className="flex items-center justify-between bg-gray-700 p-4 rounded-lg opacity-75"
                     >
                       <div>
-                        <p className="text-white font-medium">경기 ID: {game.game_id}</p>
+                        <p className="text-white font-medium">{game.alias || game.date || '경기'}</p>
                         <p className="text-sm text-gray-400">
-                          생성자: {game.creator || '-'} | 날짜: {game.date || '-'}
+                          ID: {game.game_id} | 날짜: {game.date || '-'}
                         </p>
                         {game.team_home && game.team_away && (
                           <p className="text-sm text-gray-400 mt-1">
