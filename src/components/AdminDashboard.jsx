@@ -16,11 +16,15 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false)
   const [memberSearchQuery, setMemberSearchQuery] = useState('') // 멤버 검색어
 
+  // 팀설정 모달
+  const [showTeamSetupModal, setShowTeamSetupModal] = useState(false)
+  const [selectedMembers, setSelectedMembers] = useState([]) // 선택된 멤버 ID 배열
+  const [selectedTeamId, setSelectedTeamId] = useState('') // 선택된 팀 ID
+
   // 폼 데이터
   const [memberForm, setMemberForm] = useState({ name: '' })
   const [teamForm, setTeamForm] = useState({ name: '' })
   const [gameForm, setGameForm] = useState({ alias: '', date: '' })
-  const [assignForm, setAssignForm] = useState({ memberId: '', teamId: '' })
 
   // 인증 확인 및 axios 인터셉터 설정
   useEffect(() => {
@@ -252,54 +256,68 @@ export default function AdminDashboard() {
     }
   }
 
-  // 팀 배정
-  const handleAssignTeam = async (e) => {
-    e.preventDefault()
-    if (!assignForm.memberId || !assignForm.teamId) {
-      alert('멤버와 팀을 모두 선택해주세요.')
+  // 팀설정 (여러 멤버를 한 번에 배정)
+  const handleBulkAssignTeam = async () => {
+    if (selectedMembers.length === 0) {
+      alert('멤버를 선택해주세요.')
       return
     }
 
-    const member = members.find(m => m.member_id === assignForm.memberId)
-    const team = teams.find(t => t.team_id === assignForm.teamId)
-
-    console.log('[팀 배정] 선택된 멤버:', member)
-    console.log('[팀 배정] 선택된 팀:', team)
-
-    if (!member || !team) {
-      alert('멤버 또는 팀을 찾을 수 없습니다.')
+    if (!selectedTeamId) {
+      alert('팀을 선택해주세요.')
       return
     }
 
-    const requestData = {
-      room: selectedRoom,
-      member: member.name,
-      member_id: assignForm.memberId,
-      team: team.name
+    const team = teams.find(t => t.team_id === selectedTeamId)
+    if (!team) {
+      alert('팀을 찾을 수 없습니다.')
+      return
     }
-
-    console.log('[팀 배정] 요청 URL:', `${API_URL}/api/commands/member_team`)
-    console.log('[팀 배정] 요청 데이터:', requestData)
-    console.log('[팀 배정] 인증 헤더:', getAxiosConfig())
 
     try {
-      const response = await axios.post(
-        `${API_URL}/api/commands/member_team`,
-        requestData,
-        getAxiosConfig()
-      )
+      setLoading(true)
+      let successCount = 0
+      let failCount = 0
 
-      console.log('[팀 배정] 응답:', response.data)
+      // 선택된 모든 멤버에게 팀 배정
+      for (const memberId of selectedMembers) {
+        const member = members.find(m => m.member_id === memberId)
+        if (!member) continue
 
-      if (response.data.success) {
-        alert('팀이 배정되었습니다.')
-        setAssignForm({ memberId: '', teamId: '' })
-        loadMembers()
+        try {
+          const requestData = {
+            room: selectedRoom,
+            member: member.name,
+            member_id: memberId,
+            team: team.name
+          }
+
+          const response = await axios.post(
+            `${API_URL}/api/commands/member_team`,
+            requestData,
+            getAxiosConfig()
+          )
+
+          if (response.data.success) {
+            successCount++
+          } else {
+            failCount++
+          }
+        } catch (err) {
+          console.error(`[팀 배정] ${member.name} 배정 실패:`, err)
+          failCount++
+        }
       }
+
+      alert(`팀 배정 완료\n성공: ${successCount}명\n실패: ${failCount}명`)
+      setShowTeamSetupModal(false)
+      setSelectedMembers([])
+      setSelectedTeamId('')
+      loadMembers()
     } catch (err) {
-      console.error('[팀 배정] 에러 상세:', err)
-      console.error('[팀 배정] 에러 응답:', err.response)
       handleApiError(err, '팀 배정 실패')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -450,16 +468,6 @@ export default function AdminDashboard() {
               팀 관리
             </button>
             <button
-              onClick={() => setActiveTab('assign')}
-              className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === 'assign'
-                  ? 'text-blue-500 border-b-2 border-blue-500'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              팀 배정
-            </button>
-            <button
               onClick={() => setActiveTab('games')}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === 'games'
@@ -508,9 +516,17 @@ export default function AdminDashboard() {
 
             {/* 멤버 목록 */}
             <div className="bg-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">
-                멤버 목록 ({members.length}명)
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white">
+                  멤버 목록 ({members.length}명)
+                </h2>
+                <button
+                  onClick={() => setShowTeamSetupModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  👥 팀설정
+                </button>
+              </div>
 
               {/* 검색 입력 */}
               <div className="mb-4">
@@ -549,22 +565,12 @@ export default function AdminDashboard() {
                         {member.team ? `팀: ${member.team}` : '팀 미배정'}
                       </p>
                     </div>
-                    <div className="flex gap-2">
-                      {member.team && (
-                        <button
-                          onClick={() => handleUnassignTeam(member.member_id, member.name)}
-                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                        >
-                          팀 해제
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDeleteMember(member.member_id, member.name)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                      >
-                        삭제
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleDeleteMember(member.member_id, member.name)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                    >
+                      삭제
+                    </button>
                   </div>
                 ))}
                 {members.filter(member =>
@@ -634,55 +640,6 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
-          </div>
-        )}
-
-        {/* 팀 배정 */}
-        {activeTab === 'assign' && (
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">팀 배정</h2>
-            <form onSubmit={handleAssignTeam} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">멤버 선택</label>
-                <select
-                  value={assignForm.memberId}
-                  onChange={(e) => setAssignForm({ ...assignForm, memberId: e.target.value })}
-                  className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                  required
-                >
-                  <option value="">멤버를 선택하세요</option>
-                  {members.map((member) => (
-                    <option key={member.member_id} value={member.member_id}>
-                      {member.name} [ID: {member.member_id}] {member.team && `(현재: ${member.team})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">팀 선택</label>
-                <select
-                  value={assignForm.teamId}
-                  onChange={(e) => setAssignForm({ ...assignForm, teamId: e.target.value })}
-                  className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                  required
-                >
-                  <option value="">팀을 선택하세요</option>
-                  {teams.map((team) => (
-                    <option key={team.team_id} value={team.team_id}>
-                      {team.name} [ID: {team.team_id}] ({team.member_count}명)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                팀 배정하기
-              </button>
-            </form>
           </div>
         )}
 
@@ -884,6 +841,115 @@ export default function AdminDashboard() {
               loadTeams()
             }}
           />
+        )}
+
+        {/* 팀설정 모달 */}
+        {showTeamSetupModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[85vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">👥 팀설정</h2>
+                <button
+                  onClick={() => {
+                    setShowTeamSetupModal(false)
+                    setSelectedMembers([])
+                    setSelectedTeamId('')
+                  }}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* 팀 선택 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  배정할 팀 선택
+                </label>
+                <select
+                  value={selectedTeamId}
+                  onChange={(e) => setSelectedTeamId(e.target.value)}
+                  className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                >
+                  <option value="">팀을 선택하세요</option>
+                  {teams.map((team) => (
+                    <option key={team.team_id} value={team.team_id}>
+                      {team.name} ({team.member_count}명)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 멤버 선택 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  멤버 선택 ({selectedMembers.length}명 선택됨)
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto bg-gray-900 rounded-lg p-3">
+                  {members.map((member) => {
+                    const isSelected = selectedMembers.includes(member.member_id)
+                    return (
+                      <button
+                        key={member.member_id}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedMembers(selectedMembers.filter(id => id !== member.member_id))
+                          } else {
+                            setSelectedMembers([...selectedMembers, member.member_id])
+                          }
+                        }}
+                        className={`
+                          p-3 rounded-lg text-left transition-all
+                          ${isSelected
+                            ? 'bg-blue-600 text-white font-semibold'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{member.name}</p>
+                            <p className="text-xs opacity-70">
+                              {member.team ? `현재: ${member.team}` : '팀 미배정'}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <span className="text-lg">✓</span>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                  {members.length === 0 && (
+                    <p className="text-gray-400 text-center py-8 col-span-full">
+                      멤버가 없습니다.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* 버튼 */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowTeamSetupModal(false)
+                    setSelectedMembers([])
+                    setSelectedTeamId('')
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleBulkAssignTeam}
+                  disabled={loading || selectedMembers.length === 0 || !selectedTeamId}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? '처리중...' : `팀 배정 (${selectedMembers.length}명)`}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
