@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   const [teams, setTeams] = useState([])
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(false)
+  const [memberSearchQuery, setMemberSearchQuery] = useState('') // 멤버 검색어
 
   // 폼 데이터
   const [memberForm, setMemberForm] = useState({ name: '' })
@@ -510,8 +511,33 @@ export default function AdminDashboard() {
               <h2 className="text-xl font-bold text-white mb-4">
                 멤버 목록 ({members.length}명)
               </h2>
+
+              {/* 검색 입력 */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={memberSearchQuery}
+                  onChange={(e) => setMemberSearchQuery(e.target.value)}
+                  placeholder="🔍 멤버 이름으로 검색..."
+                  className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                />
+                {memberSearchQuery && (
+                  <p className="text-sm text-gray-400 mt-2">
+                    검색 결과: {members.filter(member =>
+                      member.name.toLowerCase().includes(memberSearchQuery.toLowerCase())
+                    ).length}명
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
-                {members.map((member) => (
+                {members
+                  .filter(member =>
+                    memberSearchQuery.trim()
+                      ? member.name.toLowerCase().includes(memberSearchQuery.toLowerCase())
+                      : true
+                  )
+                  .map((member) => (
                   <div
                     key={member.member_id}
                     className="flex items-center justify-between bg-gray-700 p-4 rounded-lg"
@@ -541,8 +567,14 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 ))}
-                {members.length === 0 && (
-                  <p className="text-gray-400 text-center py-8">멤버가 없습니다.</p>
+                {members.filter(member =>
+                  memberSearchQuery.trim()
+                    ? member.name.toLowerCase().includes(memberSearchQuery.toLowerCase())
+                    : true
+                ).length === 0 && (
+                  <p className="text-gray-400 text-center py-8">
+                    {memberSearchQuery ? '검색 결과가 없습니다.' : '멤버가 없습니다.'}
+                  </p>
                 )}
               </div>
             </div>

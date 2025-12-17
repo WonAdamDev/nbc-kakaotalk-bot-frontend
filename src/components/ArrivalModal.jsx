@@ -12,6 +12,7 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lin
   const [loading, setLoading] = useState(false)
   const [members, setMembers] = useState([])
   const [loadingMembers, setLoadingMembers] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('') // 멤버 검색어
 
   // 멤버 프리셋 로드
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lin
       setSelectedMembers([])
       setGuestName('')
       setGuestList([])
+      setSearchQuery('')
     }
   }, [isOpen])
 
@@ -125,12 +127,19 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lin
     }
   }
 
-  // 팀별로 그룹화된 멤버 목록
+  // 팀별로 그룹화된 멤버 목록 (검색어 필터링 포함)
   const groupedMembers = useMemo(() => {
+    // 검색어로 필터링
+    const filteredMembers = searchQuery.trim()
+      ? members.filter(member =>
+          member.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : members
+
     const groups = {}
     const noTeam = []
 
-    members.forEach((member) => {
+    filteredMembers.forEach((member) => {
       if (member.team) {
         if (!groups[member.team]) {
           groups[member.team] = []
@@ -149,7 +158,7 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lin
     const sortedTeams = Object.keys(groups).sort()
 
     return { teams: sortedTeams, groups, noTeam }
-  }, [members])
+  }, [members, searchQuery])
 
   if (!isOpen) return null
 
@@ -219,6 +228,27 @@ export default function ArrivalModal({ isOpen, onClose, onArrival, roomName, lin
                 <p className="text-sm text-gray-600 mb-3">
                   ✨ 여러 멤버를 선택할 수 있습니다. 선택 후 출석 처리 버튼을 누르세요.
                 </p>
+
+                {/* 검색 입력 */}
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="🔍 이름으로 검색..."
+                    className="input w-full"
+                    autoFocus
+                  />
+                  {searchQuery && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      검색 결과: {
+                        groupedMembers.teams.reduce((sum, team) =>
+                          sum + groupedMembers.groups[team].length, 0
+                        ) + groupedMembers.noTeam.length
+                      }명
+                    </p>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto mb-4">
                   {groupedMembers.teams.map((teamName) => (
