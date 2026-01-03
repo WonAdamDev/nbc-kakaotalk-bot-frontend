@@ -388,14 +388,25 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   const nextNumber = (lineups.home?.length || 0) + 1
                   handleDrop(e, 'home', nextNumber)
                 }}
+                onClick={() => {
+                  if (swapModePlayer && canSwapLineup) {
+                    const nextNumber = (lineups.home?.length || 0) + 1
+                    handleSwapWithPlayer('home', nextNumber)
+                  }
+                }}
                 className={`
                   p-8 rounded-lg border-2 border-dashed transition-all
                   ${dragOverPlayer?.team === 'home' ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-gray-50'}
                   ${canSwapLineup && draggedPlayer ? 'hover:border-blue-400' : ''}
+                  ${swapModePlayer && canSwapLineup ? 'cursor-pointer hover:border-blue-500 hover:bg-blue-100' : ''}
                 `}
               >
                 <p className="text-gray-500 text-sm text-center">
-                  {canSwapLineup && draggedPlayer ? '여기에 드롭하여 팀 이동' : '도착한 선수가 없습니다.'}
+                  {swapModePlayer && canSwapLineup
+                    ? '🔄 클릭하여 이 팀으로 이동'
+                    : canSwapLineup && draggedPlayer
+                    ? '여기에 드롭하여 팀 이동'
+                    : '도착한 선수가 없습니다.'}
                 </p>
               </div>
             ) : (
@@ -601,14 +612,25 @@ export default function LineupSection({ gameId, lineups, gameStatus, quarters, o
                   const nextNumber = (lineups.away?.length || 0) + 1
                   handleDrop(e, 'away', nextNumber)
                 }}
+                onClick={() => {
+                  if (swapModePlayer && canSwapLineup) {
+                    const nextNumber = (lineups.away?.length || 0) + 1
+                    handleSwapWithPlayer('away', nextNumber)
+                  }
+                }}
                 className={`
                   p-8 rounded-lg border-2 border-dashed transition-all
                   ${dragOverPlayer?.team === 'away' ? 'border-gray-700 bg-gray-200' : 'border-gray-300 bg-gray-50'}
                   ${canSwapLineup && draggedPlayer ? 'hover:border-gray-600' : ''}
+                  ${swapModePlayer && canSwapLineup ? 'cursor-pointer hover:border-gray-600 hover:bg-gray-200' : ''}
                 `}
               >
                 <p className="text-gray-500 text-sm text-center">
-                  {canSwapLineup && draggedPlayer ? '여기에 드롭하여 팀 이동' : '도착한 선수가 없습니다.'}
+                  {swapModePlayer && canSwapLineup
+                    ? '🔄 클릭하여 이 팀으로 이동'
+                    : canSwapLineup && draggedPlayer
+                    ? '여기에 드롭하여 팀 이동'
+                    : '도착한 선수가 없습니다.'}
                 </p>
               </div>
             ) : (
