@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [members, setMembers] = useState([])
   const [teams, setTeams] = useState([])
   const [games, setGames] = useState([])
+  const [scheduledMessages, setScheduledMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const [memberSearchQuery, setMemberSearchQuery] = useState('') // 멤버 검색어
 
@@ -21,10 +22,19 @@ export default function AdminDashboard() {
   const [selectedMembers, setSelectedMembers] = useState([]) // 선택된 멤버 ID 배열
   const [selectedTeamId, setSelectedTeamId] = useState('') // 선택된 팀 ID
 
+  // 예약 메시지 모달
+  const [showScheduledMessageModal, setShowScheduledMessageModal] = useState(false)
+  const [editingScheduledMessage, setEditingScheduledMessage] = useState(null)
+
   // 폼 데이터
   const [memberForm, setMemberForm] = useState({ name: '' })
   const [teamForm, setTeamForm] = useState({ name: '' })
   const [gameForm, setGameForm] = useState({ alias: '', date: '' })
+  const [scheduledMessageForm, setScheduledMessageForm] = useState({
+    message: '',
+    scheduled_time: '09:00',
+    days_of_week: []
+  })
 
   // 인증 확인 및 axios 인터셉터 설정
   useEffect(() => {
@@ -161,6 +171,22 @@ export default function AdminDashboard() {
     }
   }
 
+  // 예약 메시지 목록 로드
+  const loadScheduledMessages = async () => {
+    if (!selectedRoom) return
+
+    try {
+      const response = await axios.get(`${API_URL}/api/scheduled-messages`, {
+        params: { room: selectedRoom }
+      })
+      if (response.data.success) {
+        setScheduledMessages(response.data.data.scheduled_messages)
+      }
+    } catch (err) {
+      console.error('Failed to load scheduled messages:', err)
+    }
+  }
+
   // 방 변경 시 데이터 로드
   useEffect(() => {
     loadRooms()
@@ -171,6 +197,7 @@ export default function AdminDashboard() {
       loadMembers()
       loadTeams()
       loadGames()
+      loadScheduledMessages()
     }
   }, [selectedRoom])
 
@@ -403,6 +430,116 @@ export default function AdminDashboard() {
     }
   }
 
+  // 예약 메시지 모달 열기 (생성)
+  const openCreateScheduledMessageModal = () => {
+    setEditingScheduledMessage(null)
+    setScheduledMessageForm({
+      message: '',
+      scheduled_time: '09:00',
+      days_of_week: []
+    })
+    setShowScheduledMessageModal(true)
+  }
+
+  // 예약 메시지 모달 열기 (수정)
+  const openEditScheduledMessageModal = (msg) => {
+    setEditingScheduledMessage(msg)
+    setScheduledMessageForm({
+      message: msg.message,
+      scheduled_time: msg.scheduled_time,
+      days_of_week: msg.days_of_week
+    })
+    setShowScheduledMessageModal(true)
+  }
+
+  // 예약 메시지 생성/수정
+  const handleSaveScheduledMessage = async () => {
+    if (!scheduledMessageForm.message.trim()) {
+      alert('메시지 내용을 입력하세요.')
+      return
+    }
+
+    if (scheduledMessageForm.days_of_week.length === 0) {
+      alert('최소 하나의 요일을 선택하세요.')
+      return
+    }
+
+    try {
+      if (editingScheduledMessage) {
+        // 수정
+        const response = await axios.put(
+          `${API_URL}/api/scheduled-message/${editingScheduledMessage.id}`,
+          {
+            message: scheduledMessageForm.message,
+            scheduled_time: scheduledMessageForm.scheduled_time,
+            days_of_week: scheduledMessageForm.days_of_week,
+            is_active: editingScheduledMessage.is_active
+          },
+          getAxiosConfig()
+        )
+
+        if (response.data.success) {
+          alert('예약 메시지가 수정되었습니다.')
+          setShowScheduledMessageModal(false)
+          loadScheduledMessages()
+        }
+      } else {
+        // 생성
+        const response = await axios.post(
+          `${API_URL}/api/scheduled-message`,
+          {
+            room: selectedRoom,
+            message: scheduledMessageForm.message,
+            scheduled_time: scheduledMessageForm.scheduled_time,
+            days_of_week: scheduledMessageForm.days_of_week,
+            created_by: 'Admin'
+          },
+          getAxiosConfig()
+        )
+
+        if (response.data.success) {
+          alert('예약 메시지가 생성되었습니다.')
+          setShowScheduledMessageModal(false)
+          loadScheduledMessages()
+        }
+      }
+    } catch (err) {
+      handleApiError(err, editingScheduledMessage ? '예약 메시지 수정 실패' : '예약 메시지 생성 실패')
+    }
+  }
+
+  // 예약 메시지 활성화/비활성화 토글
+  const handleToggleScheduledMessage = async (msg) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/api/scheduled-message/${msg.id}`,
+        {
+          is_active: !msg.is_active
+        },
+        getAxiosConfig()
+      )
+
+      if (response.data.success) {
+        loadScheduledMessages()
+      }
+    } catch (err) {
+      handleApiError(err, '상태 변경 실패')
+    }
+  }
+
+  // 예약 메시지 삭제
+  const handleDeleteScheduledMessage = async (msgId) => {
+    if (!confirm('이 예약 메시지를 삭제하시겠습니까?')) return
+
+    try {
+      await axios.delete(`${API_URL}/api/scheduled-message/${msgId}`, getAxiosConfig())
+      alert('예약 메시지가 삭제되었습니다.')
+      loadScheduledMessages()
+    } catch (err) {
+      handleApiError(err, '예약 메시지 삭제 실패')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -476,6 +613,16 @@ export default function AdminDashboard() {
               }`}
             >
               경기 관리
+            </button>
+            <button
+              onClick={() => setActiveTab('scheduled')}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeTab === 'scheduled'
+                  ? 'text-blue-500 border-b-2 border-blue-500'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              예약 메시지
             </button>
             <button
               onClick={() => setActiveTab('data')}
@@ -833,6 +980,106 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* 예약 메시지 */}
+        {activeTab === 'scheduled' && (
+          <div className="space-y-6">
+            {/* 설명 */}
+            <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4">
+              <h3 className="text-blue-400 font-medium mb-2">📢 예약 메시지 기능</h3>
+              <p className="text-sm text-gray-300">
+                매일 정해진 시각에 자동으로 카카오톡 방에 메시지를 전송합니다.
+                카카오톡 봇 클라이언트는 매일 아침 6시에 서버에서 오늘의 예약 메시지를 가져와 전송합니다.
+              </p>
+            </div>
+
+            {/* 예약 메시지 생성 버튼 */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">
+                  예약 메시지 목록 ({scheduledMessages.length}개)
+                </h2>
+                <button
+                  onClick={openCreateScheduledMessageModal}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  + 예약 메시지 추가
+                </button>
+              </div>
+
+              {/* 예약 메시지 목록 */}
+              <div className="mt-6 space-y-3">
+                {scheduledMessages.map((msg) => {
+                  const dayNames = ['월', '화', '수', '목', '금', '토', '일']
+                  const selectedDays = msg.days_of_week.map(d => dayNames[d - 1]).join(', ')
+
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`bg-gray-700 p-4 rounded-lg ${!msg.is_active ? 'opacity-50' : ''}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-2xl font-bold text-blue-400">
+                              {msg.scheduled_time}
+                            </span>
+                            <span className="text-sm text-gray-400">
+                              {selectedDays}
+                            </span>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              msg.is_active
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gray-600 text-gray-300'
+                            }`}>
+                              {msg.is_active ? '활성화' : '비활성화'}
+                            </span>
+                          </div>
+                          <p className="text-white whitespace-pre-wrap">
+                            {msg.message}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            생성: {new Date(msg.created_at).toLocaleString('ko-KR')} | 생성자: {msg.created_by}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <button
+                            onClick={() => handleToggleScheduledMessage(msg)}
+                            className={`px-3 py-1 rounded text-sm transition-colors ${
+                              msg.is_active
+                                ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                                : 'bg-green-600 hover:bg-green-700 text-white'
+                            }`}
+                          >
+                            {msg.is_active ? '비활성화' : '활성화'}
+                          </button>
+                          <button
+                            onClick={() => openEditScheduledMessageModal(msg)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDeleteScheduledMessage(msg.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {scheduledMessages.length === 0 && (
+                  <p className="text-gray-400 text-center py-8">
+                    예약 메시지가 없습니다. 버튼을 클릭하여 추가하세요.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 데이터 관리 */}
         {activeTab === 'data' && (
           <DataManagement
@@ -946,6 +1193,125 @@ export default function AdminDashboard() {
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? '처리중...' : `팀 배정 (${selectedMembers.length}명)`}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 예약 메시지 생성/수정 모달 */}
+        {showScheduledMessageModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">
+                  {editingScheduledMessage ? '예약 메시지 수정' : '예약 메시지 생성'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowScheduledMessageModal(false)
+                    setEditingScheduledMessage(null)
+                  }}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* 메시지 내용 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    메시지 내용
+                  </label>
+                  <textarea
+                    value={scheduledMessageForm.message}
+                    onChange={(e) => setScheduledMessageForm({ ...scheduledMessageForm, message: e.target.value })}
+                    placeholder="전송할 메시지를 입력하세요"
+                    rows={4}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {/* 전송 시각 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    전송 시각
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduledMessageForm.scheduled_time}
+                    onChange={(e) => setScheduledMessageForm({ ...scheduledMessageForm, scheduled_time: e.target.value })}
+                    className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {/* 요일 선택 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    전송 요일
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 1, label: '월' },
+                      { value: 2, label: '화' },
+                      { value: 3, label: '수' },
+                      { value: 4, label: '목' },
+                      { value: 5, label: '금' },
+                      { value: 6, label: '토' },
+                      { value: 7, label: '일' }
+                    ].map(day => {
+                      const isSelected = scheduledMessageForm.days_of_week.includes(day.value)
+                      return (
+                        <button
+                          key={day.value}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setScheduledMessageForm({
+                                ...scheduledMessageForm,
+                                days_of_week: scheduledMessageForm.days_of_week.filter(d => d !== day.value)
+                              })
+                            } else {
+                              setScheduledMessageForm({
+                                ...scheduledMessageForm,
+                                days_of_week: [...scheduledMessageForm.days_of_week, day.value].sort()
+                              })
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                            isSelected
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    선택된 요일: {scheduledMessageForm.days_of_week.length === 0 ? '없음' : `${scheduledMessageForm.days_of_week.length}일`}
+                  </p>
+                </div>
+              </div>
+
+              {/* 버튼 */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowScheduledMessageModal(false)
+                    setEditingScheduledMessage(null)
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleSaveScheduledMessage}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  {editingScheduledMessage ? '수정' : '생성'}
                 </button>
               </div>
             </div>
