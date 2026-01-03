@@ -106,7 +106,19 @@ export default function AdminDashboard() {
       if (response.data.success) {
         setRooms(response.data.data.rooms)
         if (response.data.data.rooms.length > 0 && !selectedRoom) {
-          setSelectedRoom(response.data.data.rooms[0])
+          // 1. localStorage에서 마지막 선택한 방 복원
+          const lastSelectedRoom = localStorage.getItem('admin_last_selected_room')
+          if (lastSelectedRoom && response.data.data.rooms.includes(lastSelectedRoom)) {
+            setSelectedRoom(lastSelectedRoom)
+          }
+          // 2. 없으면 "넥슨 농구 동호회" 우선 선택
+          else if (response.data.data.rooms.includes('넥슨 농구 동호회')) {
+            setSelectedRoom('넥슨 농구 동호회')
+          }
+          // 3. 그것도 없으면 첫 번째 방
+          else {
+            setSelectedRoom(response.data.data.rooms[0])
+          }
         }
       }
     } catch (err) {
@@ -194,6 +206,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (selectedRoom) {
+      // localStorage에 마지막 선택한 방 저장
+      localStorage.setItem('admin_last_selected_room', selectedRoom)
+
       loadMembers()
       loadTeams()
       loadGames()
