@@ -468,7 +468,7 @@ export default function AdminDashboard() {
       if (editingScheduledMessage) {
         // 수정
         const response = await axios.put(
-          `${API_URL}/api/scheduled-message/${editingScheduledMessage.id}`,
+          `${API_URL}/api/scheduled-messages/${editingScheduledMessage.id}`,
           {
             message: scheduledMessageForm.message,
             scheduled_time: scheduledMessageForm.scheduled_time,
@@ -486,7 +486,7 @@ export default function AdminDashboard() {
       } else {
         // 생성
         const response = await axios.post(
-          `${API_URL}/api/scheduled-message`,
+          `${API_URL}/api/scheduled-messages`,
           {
             room: selectedRoom,
             message: scheduledMessageForm.message,
@@ -512,7 +512,7 @@ export default function AdminDashboard() {
   const handleToggleScheduledMessage = async (msg) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/scheduled-message/${msg.id}`,
+        `${API_URL}/api/scheduled-messages/${msg.id}`,
         {
           is_active: !msg.is_active
         },
@@ -532,7 +532,7 @@ export default function AdminDashboard() {
     if (!confirm('이 예약 메시지를 삭제하시겠습니까?')) return
 
     try {
-      await axios.delete(`${API_URL}/api/scheduled-message/${msgId}`, getAxiosConfig())
+      await axios.delete(`${API_URL}/api/scheduled-messages/${msgId}`, getAxiosConfig())
       alert('예약 메시지가 삭제되었습니다.')
       loadScheduledMessages()
     } catch (err) {
